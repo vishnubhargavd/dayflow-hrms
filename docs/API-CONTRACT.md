@@ -84,6 +84,18 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Attendance | `/api/v1/attendance/analytics/departments` | GET | Bearer JWT | ADMIN, HR |
 | Attendance | `/api/v1/attendance/analytics/trend` | GET | Bearer JWT | ADMIN, HR |
 | Attendance | `/api/v1/attendance/analytics/low-attendance` | GET | Bearer JWT | ADMIN, HR |
+| Leave | `/api/v1/leave/me/balances` | GET | Bearer JWT | All Employees (Scoped to self) |
+| Leave | `/api/v1/leave/me/requests` | GET | Bearer JWT | All Employees (Scoped to self) |
+| Leave | `/api/v1/leave/me/requests/:id` | GET | Bearer JWT | All Employees (Scoped to self) |
+| Leave | `/api/v1/leave/me/requests` | POST | Bearer JWT | All Employees (Scoped to self) |
+| Leave | `/api/v1/leave/me/requests/:id/cancel` | PATCH | Bearer JWT | All Employees (Scoped to self) |
+| Leave | `/api/v1/leave/types` | GET | Bearer JWT | All Authenticated Users |
+| Leave | `/api/v1/leave/types` | POST | Bearer JWT | ADMIN, HR |
+| Leave | `/api/v1/leave/balances/allocate` | POST | Bearer JWT | ADMIN, HR |
+| Leave | `/api/v1/leave/balances/:employeeId` | GET | Bearer JWT | ADMIN, HR |
+| Leave | `/api/v1/leave/requests` | GET | Bearer JWT | ADMIN, HR |
+| Leave | `/api/v1/leave/requests/:id/approve` | PATCH | Bearer JWT | ADMIN, HR |
+| Leave | `/api/v1/leave/requests/:id/reject` | PATCH | Bearer JWT | ADMIN, HR |
 | Payroll | `/api/v1/payroll` | GET | Bearer JWT | Joshith |
 | Performance | `/api/v1/performance` | GET | Bearer JWT | Joshith |
 | Recruitment | `/api/v1/recruitment` | GET | Bearer JWT | Joshith |

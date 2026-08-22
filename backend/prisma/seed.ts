@@ -165,7 +165,7 @@ async function main() {
   });
 
   // 8. Seed Leave Types
-  await prisma.leaveType.upsert({
+  const paidType = await prisma.leaveType.upsert({
     where: { code: 'PAID' },
     update: {},
     create: {
@@ -173,10 +173,12 @@ async function main() {
       code: 'PAID',
       category: LeaveCategory.PAID,
       maxDaysPerYear: 18,
+      description: 'Standard annual paid time off allocation',
+      isActive: true,
     },
   });
 
-  await prisma.leaveType.upsert({
+  const sickType = await prisma.leaveType.upsert({
     where: { code: 'SICK' },
     update: {},
     create: {
@@ -184,6 +186,34 @@ async function main() {
       code: 'SICK',
       category: LeaveCategory.SICK,
       maxDaysPerYear: 12,
+      description: 'Medical and health related leave allocation',
+      isActive: true,
+    },
+  });
+
+  const casualType = await prisma.leaveType.upsert({
+    where: { code: 'CASUAL' },
+    update: {},
+    create: {
+      name: 'Casual Leave',
+      code: 'CASUAL',
+      category: LeaveCategory.CASUAL,
+      maxDaysPerYear: 6,
+      description: 'Short term urgent or personal leave allocation',
+      isActive: true,
+    },
+  });
+
+  const unpaidType = await prisma.leaveType.upsert({
+    where: { code: 'UNPAID' },
+    update: {},
+    create: {
+      name: 'Unpaid Leave',
+      code: 'UNPAID',
+      category: LeaveCategory.UNPAID,
+      maxDaysPerYear: 0,
+      description: 'Leave without pay for extended absence',
+      isActive: true,
     },
   });
 
