@@ -81,12 +81,23 @@ enum LeaveStatus {
 }
 
 enum NotificationType {
-  SYSTEM
-  LEAVE_APPROVAL
+  LEAVE_SUBMITTED
+  LEAVE_APPROVED
+  LEAVE_REJECTED
+  LEAVE_CANCELLED
+  HELPDESK_CREATED
+  HELPDESK_ASSIGNED
+  HELPDESK_UPDATED
+  HELPDESK_RESOLVED
+  HELPDESK_CLOSED
   ATTENDANCE_ALERT
-  PAYROLL_GENERATED
-  HELPDESK_TICKET
-  GENERAL
+  ATTENDANCE_CORRECTION
+  PAYROLL_PROCESSED
+  PAYSLIP_AVAILABLE
+  SALARY_UPDATED
+  PERFORMANCE_REVIEW
+  GOAL_ASSIGNED
+  SYSTEM_ALERT
 }
 
 enum HelpdeskCategory {
@@ -412,11 +423,14 @@ model Notification {
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      NotificationType
   title     String
-  message   String
+  message   String           @db.Text
   isRead    Boolean          @default(false)
+  readAt    DateTime?
   createdAt DateTime         @default(now())
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([type])
 }
 
 model HelpdeskRequest {

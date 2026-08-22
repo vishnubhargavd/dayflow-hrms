@@ -108,10 +108,13 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Helpdesk | `/api/v1/helpdesk/requests/:id/resolve` | PATCH | Bearer JWT | ADMIN, HR |
 | Helpdesk | `/api/v1/helpdesk/requests/:id/close` | PATCH | Bearer JWT | ADMIN, HR |
 | Helpdesk | `/api/v1/helpdesk/requests/:id/comments` | POST | Bearer JWT | ADMIN, HR |
+| Notifications | `/api/v1/notifications/me` | GET | Bearer JWT | All Users (Scoped to self) |
+| Notifications | `/api/v1/notifications/me/unread-count` | GET | Bearer JWT | All Users (Scoped to self) |
+| Notifications | `/api/v1/notifications/:id/read` | PATCH | Bearer JWT | All Users (Scoped to self) |
+| Notifications | `/api/v1/notifications/read-all` | PATCH | Bearer JWT | All Users (Scoped to self) |
 | Payroll | `/api/v1/payroll` | GET | Bearer JWT | Joshith |
 | Performance | `/api/v1/performance` | GET | Bearer JWT | Joshith |
 | Recruitment | `/api/v1/recruitment` | GET | Bearer JWT | Joshith |
-| Notifications | `/api/v1/notifications` | GET | Bearer JWT | Vishnu |
 | Reports | `/api/v1/reports` | GET | Bearer JWT | Joshith |
 | Audit Logs | `/api/v1/audit` | GET | Bearer JWT | ADMIN |
 

@@ -1,7 +1,8 @@
 import { prisma } from '../../config/database';
 import { AppError } from '../../middleware/error.middleware';
 import { parsePaginationParams, buildPaginationMeta } from '../../utils/pagination.util';
-import { HelpdeskStatus, HelpdeskCategory, HelpdeskPriority, Prisma, Role } from '@prisma/client';
+import { HelpdeskStatus, HelpdeskCategory, HelpdeskPriority, NotificationType, Prisma, Role } from '@prisma/client';
+import { createInternalNotification, createBulkNotifications, getHRAndAdminUserIds } from '../notifications/notifications.service';
 
 /**
  * Generate a unique ticket number: HD-YYYY-XXXX (e.g. HD-2026-0001)
@@ -73,6 +74,20 @@ export async function createHelpdeskRequestService(
         employee: { select: { id: true, firstName: true, lastName: true, loginId: true } },
       },
     });
+
+    // Notify HR/Admin team of new helpdesk ticket
+    try {
+      const hrUserIds = await getHRAndAdminUserIds(tx);
+      await createBulkNotifications({
+        userIds: hrUserIds,
+        type: NotificationType.HELPDESK_CREATED,
+        title: 'New Helpdesk Ticket Created',
+        message: `Helpdesk request ${request.ticketNumber} (${request.category}) created by ${request.employee.firstName} ${request.employee.lastName}.`,
+        tx,
+      });
+    } catch (notifErr) {
+      // Non-blocking notification error handling
+    }
 
     return request;
   });
@@ -276,7 +291,7 @@ export async function assignHelpdeskRequestService(requestId: string, assignedTo
 
   const nextStatus = request.status === HelpdeskStatus.OPEN ? HelpdeskStatus.IN_PROGRESS : request.status;
 
-  return prisma.helpdeskRequest.update({
+  const updated = await prisma.helpdeskRequest.update({
     where: { id: requestId },
     data: {
       assignedToId,
@@ -286,6 +301,20 @@ export async function assignHelpdeskRequestService(requestId: string, assignedTo
       assignedTo: { select: { id: true, firstName: true, lastName: true } },
     },
   });
+
+  // Notify assigned HR officer
+  try {
+    await createInternalNotification({
+      userId: targetEmployee.userId,
+      type: NotificationType.HELPDESK_ASSIGNED,
+      title: 'Helpdesk Ticket Assigned',
+      message: `Helpdesk request ${request.ticketNumber} has been assigned to you.`,
+    });
+  } catch (notifErr) {
+    // Non-blocking notification error handling
+  }
+
+  return updated;
 }
 
 /**
@@ -326,14 +355,31 @@ export async function resolveHelpdeskRequestService(requestId: string, resolutio
 
   validateStatusTransition(request.status, HelpdeskStatus.RESOLVED);
 
-  return prisma.helpdeskRequest.update({
+  const updated = await prisma.helpdeskRequest.update({
     where: { id: requestId },
     data: {
       status: HelpdeskStatus.RESOLVED,
       resolution: resolution.trim(),
       resolvedAt: new Date(),
     },
+    include: {
+      employee: { select: { userId: true } },
+    },
   });
+
+  // Notify requesting employee of resolution
+  try {
+    await createInternalNotification({
+      userId: updated.employee.userId,
+      type: NotificationType.HELPDESK_RESOLVED,
+      title: 'Helpdesk Ticket Resolved',
+      message: `Your helpdesk request ${request.ticketNumber} has been resolved.`,
+    });
+  } catch (notifErr) {
+    // Non-blocking notification error handling
+  }
+
+  return updated;
 }
 
 /**
@@ -348,13 +394,30 @@ export async function closeHelpdeskRequestService(requestId: string) {
 
   validateStatusTransition(request.status, HelpdeskStatus.CLOSED);
 
-  return prisma.helpdeskRequest.update({
+  const updated = await prisma.helpdeskRequest.update({
     where: { id: requestId },
     data: {
       status: HelpdeskStatus.CLOSED,
       closedAt: new Date(),
     },
+    include: {
+      employee: { select: { userId: true } },
+    },
   });
+
+  // Notify requesting employee of closure
+  try {
+    await createInternalNotification({
+      userId: updated.employee.userId,
+      type: NotificationType.HELPDESK_CLOSED,
+      title: 'Helpdesk Ticket Closed',
+      message: `Your helpdesk request ${request.ticketNumber} has been closed.`,
+    });
+  } catch (notifErr) {
+    // Non-blocking notification error handling
+  }
+
+  return updated;
 }
 
 /**

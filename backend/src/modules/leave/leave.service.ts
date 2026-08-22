@@ -1,7 +1,8 @@
 import { prisma } from '../../config/database';
 import { AppError } from '../../middleware/error.middleware';
 import { parsePaginationParams, buildPaginationMeta } from '../../utils/pagination.util';
-import { LeaveStatus, LeaveCategory, Prisma, Role, AttendanceStatus } from '@prisma/client';
+import { NotificationType, LeaveStatus, LeaveCategory, AttendanceStatus, Prisma } from '@prisma/client';
+import { createInternalNotification, createBulkNotifications, getHRAndAdminUserIds } from '../notifications/notifications.service';
 
 /**
  * Calculate total inclusive days between startDate and endDate
@@ -156,6 +157,20 @@ export async function applyLeaveService(employeeId: string, data: { leaveTypeId:
       },
     });
 
+    // Notify HR/Admin team of new leave submission
+    try {
+      const hrUserIds = await getHRAndAdminUserIds(tx);
+      await createBulkNotifications({
+        userIds: hrUserIds,
+        type: NotificationType.LEAVE_SUBMITTED,
+        title: 'New Leave Request Submitted',
+        message: `${leaveRequest.employee.firstName} ${leaveRequest.employee.lastName} submitted a request for ${leaveRequest.leaveType.name} (${totalDays} day/s).`,
+        tx,
+      });
+    } catch (notifErr) {
+      // Non-blocking notification error handling
+    }
+
     return leaveRequest;
   });
 }
@@ -266,7 +281,7 @@ export async function approveLeaveRequestService(requestId: string, reviewerEmpl
       },
       include: {
         leaveType: true,
-        employee: { select: { id: true, firstName: true, lastName: true, loginId: true } },
+        employee: { select: { id: true, userId: true, firstName: true, lastName: true, loginId: true } },
         reviewer: { select: { id: true, firstName: true, lastName: true } },
       },
     });
@@ -299,6 +314,19 @@ export async function approveLeaveRequestService(requestId: string, reviewerEmpl
       }
     } catch (attErr) {
       console.warn('Attendance sync non-fatal notice:', attErr);
+    }
+
+    // Dispatch notification to requesting employee
+    try {
+      await createInternalNotification({
+        userId: approvedRequest.employee.userId,
+        type: NotificationType.LEAVE_APPROVED,
+        title: 'Leave Request Approved',
+        message: `Your request for ${approvedRequest.leaveType.name} (${approvedRequest.totalDays} day/s) has been approved.`,
+        tx,
+      });
+    } catch (notifErr) {
+      // Non-blocking notification error handling
     }
 
     return approvedRequest;
@@ -360,10 +388,23 @@ export async function rejectLeaveRequestService(
       },
       include: {
         leaveType: true,
-        employee: { select: { id: true, firstName: true, lastName: true, loginId: true } },
+        employee: { select: { id: true, userId: true, firstName: true, lastName: true, loginId: true } },
         reviewer: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+
+    // Dispatch notification to requesting employee
+    try {
+      await createInternalNotification({
+        userId: rejectedRequest.employee.userId,
+        type: NotificationType.LEAVE_REJECTED,
+        title: 'Leave Request Rejected',
+        message: `Your request for ${rejectedRequest.leaveType.name} was rejected: ${rejectionReason}`,
+        tx,
+      });
+    } catch (notifErr) {
+      // Non-blocking notification error handling
+    }
 
     return rejectedRequest;
   });
