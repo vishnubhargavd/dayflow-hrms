@@ -34,26 +34,32 @@ Every index in the database is explicitly designed and justified to satisfy crit
 
 ### 1. `Attendance(employeeId, date)` — Composite Unique Index
 - **Prisma Schema**: `@@unique([employeeId, date])`
+- **Fields Supported**: `id`, `employeeId`, `date`, `checkIn`, `checkOut`, `status` (`PRESENT`, `ABSENT`, `HALF_DAY`, `LEAVE`), `workHours`, `overtimeHours`, `createdAt`, `updatedAt`.
 - **Justification**:
   1. **Data Integrity**: Guarantees at the database level that an employee cannot have multiple conflicting attendance records for the same calendar date.
   2. **Query Performance**: Accelerates daily attendance lookup queries by employee (`SELECT * FROM "Attendance" WHERE "employeeId" = $1 AND "date" = $2`) to `O(log N)` complexity.
 
-### 2. `LeaveRequest(status)` — Index
+### 2. `Attendance(status)` & `Attendance(date)` — Indexes
+- **Prisma Schema**: `@@index([status])`, `@@index([date])`
+- **Justification**:
+  1. **Query Filtering**: Accelerates date-range queries (`WHERE "date" >= $1 AND "date" <= $2`) and status-specific lookups (`WHERE "status" = 'ABSENT'`).
+
+### 3. `LeaveRequest(status)` — Index
 - **Prisma Schema**: `@@index([status])`
 - **Justification**:
   1. **HR Approval Workflow**: HR Managers frequently query for pending leave requests (`WHERE status = 'PENDING'`). Without this index, HR dashboards would require a full table scan across tens of thousands of historical leave requests.
 
-### 3. `LeaveRequest(employeeId, createdAt)` — Composite Index
+### 4. `LeaveRequest(employeeId, createdAt)` — Composite Index
 - **Prisma Schema**: `@@index([employeeId, createdAt])`
 - **Justification**:
   1. **Employee Leave History**: Employees frequently load their personal leave history ordered by recency. This composite index satisfies index-only scans for paginated personal queries.
 
-### 4. `LeaveBalance(employeeId, leaveTypeId, year)` — Composite Unique Index
+### 5. `LeaveBalance(employeeId, leaveTypeId, year)` — Composite Unique Index
 - **Prisma Schema**: `@@unique([employeeId, leaveTypeId, year])`
 - **Justification**:
   1. **Balance Integrity**: Prevents duplicate yearly leave balance allocations for the same leave type for any given employee.
 
-### 5. `LoginSequence(companyCode, year)` — Composite Unique Index
+### 6. `LoginSequence(companyCode, year)` — Composite Unique Index
 - **Prisma Schema**: `@@unique([companyCode, year])`
 - **Justification**:
   1. **Concurrency Control**: Powers atomic sequence increments during Login ID generation (`OIJODO20260001`), ensuring multi-threaded employee creation requests generate non-conflicting Login IDs.
