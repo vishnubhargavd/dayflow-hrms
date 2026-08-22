@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthPage } from './components/AuthPage';
-import { Navbar } from './components/Navbar';
+import { MorphingNavbar } from './components/MorphingNavbar';
 import { EmployeeKanban } from './components/EmployeeKanban';
 import { ProfileFormView } from './components/ProfileFormView';
 import { AttendancePage } from './components/AttendancePage';
 import { TimeOffPage } from './components/TimeOffPage';
 import { CreateEmployeeModal } from './components/CreateEmployeeModal';
+import { AmbientBackground } from './components/AmbientBackground';
 import { Employee } from './types';
 import { api, INITIAL_EMPLOYEES } from './services/api';
 
@@ -40,13 +41,17 @@ function DashboardContent() {
   };
 
   if (!isAuthenticated) {
-    return <AuthPage onSuccess={() => {}} />;
+    return (
+      <AmbientBackground>
+        <AuthPage onSuccess={() => {}} />
+      </AmbientBackground>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#16171F] text-zinc-100 flex flex-col font-sans selection:bg-[#714B67]/30 selection:text-[#D4A5C9]">
-      {/* Top Global Navigation Bar & Systray */}
-      <Navbar
+    <AmbientBackground>
+      {/* Morphing Sliding Navigation Header */}
+      <MorphingNavbar
         activeTab={activeTab}
         setActiveTab={(tab) => {
           setActiveTab(tab);
@@ -54,18 +59,20 @@ function DashboardContent() {
         }}
         onOpenMyProfile={handleOpenMyProfile}
         onLogout={logout}
+        companyName="Dayflow"
+        companyCode="OI"
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full pb-12">
         <AnimatePresence mode="wait">
           {activeTab === 'employees' && (
             <motion.div
               key={selectedEmployee ? 'profile-view' : 'kanban-view'}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.15 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
             >
               {selectedEmployee ? (
                 <ProfileFormView
@@ -85,10 +92,10 @@ function DashboardContent() {
           {activeTab === 'attendance' && (
             <motion.div
               key="attendance"
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.15 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
             >
               <AttendancePage />
             </motion.div>
@@ -97,10 +104,10 @@ function DashboardContent() {
           {activeTab === 'timeoff' && (
             <motion.div
               key="timeoff"
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.15 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
             >
               <TimeOffPage />
             </motion.div>
@@ -114,7 +121,7 @@ function DashboardContent() {
         onClose={() => setIsCreateModalOpen(false)}
         onEmployeeCreated={handleEmployeeCreated}
       />
-    </div>
+    </AmbientBackground>
   );
 }
 
