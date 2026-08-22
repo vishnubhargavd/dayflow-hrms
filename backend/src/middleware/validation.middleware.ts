@@ -1,0 +1,48 @@
+import { Request, Response, NextFunction } from 'express';
+import { AnyZodObject, ZodError } from 'zod';
+import { sendError } from '../utils/response.util';
+
+export function validateBody(schema: AnyZodObject) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.body = await schema.parseAsync(req.body);
+      return next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const issues = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
+        return sendError(res, `Validation failed: ${issues}`, 400, 'VALIDATION_ERROR', req.originalUrl);
+      }
+      return next(error);
+    }
+  };
+}
+
+export function validateQuery(schema: AnyZodObject) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.query = await schema.parseAsync(req.query);
+      return next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const issues = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
+        return sendError(res, `Query validation failed: ${issues}`, 400, 'VALIDATION_ERROR', req.originalUrl);
+      }
+      return next(error);
+    }
+  };
+}
+
+export function validateParams(schema: AnyZodObject) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.params = await schema.parseAsync(req.params);
+      return next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const issues = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
+        return sendError(res, `Params validation failed: ${issues}`, 400, 'VALIDATION_ERROR', req.originalUrl);
+      }
+      return next(error);
+    }
+  };
+}
