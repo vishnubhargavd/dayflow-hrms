@@ -90,7 +90,6 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Notifications | `/api/v1/notifications` | GET | Bearer JWT | Vishnu |
 | Helpdesk | `/api/v1/helpdesk` | GET | Bearer JWT | Vishnu |
 | Reports | `/api/v1/reports` | GET | Bearer JWT | Joshith |
-| AI Assistant | `/api/v1/ai/query` | POST | Bearer JWT | All (Role-scoped contextual intelligence) |
 | Audit Logs | `/api/v1/audit` | GET | Bearer JWT | ADMIN |
 
 ---

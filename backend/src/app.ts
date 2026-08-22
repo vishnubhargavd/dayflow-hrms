@@ -17,7 +17,6 @@ import recruitmentRoutes from './modules/recruitment/recruitment.routes';
 import notificationRoutes from './modules/notifications/notifications.routes';
 import helpdeskRoutes from './modules/helpdesk/helpdesk.routes';
 import reportRoutes from './modules/reports/reports.routes';
-import aiRoutes from './modules/ai/ai.routes';
 import auditRoutes from './modules/audit/audit.routes';
 
 const app = express();
@@ -54,7 +53,6 @@ app.use('/api/v1/recruitment', recruitmentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/helpdesk', helpdeskRoutes);
 app.use('/api/v1/reports', reportRoutes);
-app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/audit', auditRoutes);
 
 // 404 Route Handler
