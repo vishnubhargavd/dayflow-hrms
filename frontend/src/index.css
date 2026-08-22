@@ -1,17 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-  }
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
 
-  body {
-    background-color: #09090b;
-    color: #f4f4f5;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    overflow-x: hidden;
-  }
+  /* Obsidian Base Canvas */
+  --bg-dark-base: #060806;
+  --bg-dark-surface: #0D120F;
+  --bg-dark-elevated: #131A15;
+  --bg-dark-glass: rgba(13, 18, 15, 0.78);
+
+  --bg-base: var(--bg-dark-base);
+  --bg-surface: var(--bg-dark-surface);
+  --bg-elevated: var(--bg-dark-elevated);
+  --bg-glass: var(--bg-dark-glass);
+
+  --border-subtle: rgba(243, 241, 232, 0.08);
+  --border-hover: rgba(124, 255, 178, 0.25);
+  --border-active: rgba(124, 255, 178, 0.40);
+  --border-muted: rgba(243, 241, 232, 0.14);
+
+  /* Pearl & Muted Typography Stack */
+  --text-primary: #F3F1E8;
+  --text-secondary: #D8D9D0;
+  --text-body: #A8ADA4;
+  --text-muted: #8A918A;
+  --text-dim: #59615A;
+
+  /* Signature Accents */
+  --aura-mint: #7CFFB2;
+  --aura-mint-bright: #A5FFC8;
+  --aura-emerald: #159A68;
+  --aura-emerald-deep: #087A52;
+  --aura-champagne: #D6C38A;
+  --aura-champagne-soft: #BDA96D;
+  --aura-cyan: #38bdf8;
+
+  --brand-primary: #7CFFB2;
+  --brand-gradient: linear-gradient(135deg, #D6C38A 0%, #7CFFB2 100%);
+  --brand-glow: 0 0 40px rgba(124, 255, 178, 0.08);
+
+  /* Status Colors */
+  --color-success: #45E69A;
+  --color-warning: #E7B95E;
+  --color-error: #E97870;
+
+  /* Typography Stack */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-full: 9999px;
+
+  --container-max-w: 1440px;
+}
+
+body {
+  background-color: #060806;
+  color: #F3F1E8;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Display Headings */
+.editorial-display {
+  font-size: clamp(3rem, 5.5vw, 5.75rem);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  overflow: visible;
+}
+
+.editorial-heading {
+  font-size: clamp(2rem, 3.8vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.chapter-num {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--aura-mint);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Champagne -> Mint Restrained Headline Gradient */
+.aura-gradient-text {
+  background: linear-gradient(135deg, #D6C38A 0%, #7CFFB2 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Obsidian Glass Surface */
+.product-surface {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+/* Live Pulse Indicator Dot */
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-success);
+  box-shadow: 0 0 0 0 rgba(69, 230, 154, 0.7);
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(69, 230, 154, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(69, 230, 154, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(69, 230, 154, 0); }
+}
+
+/* Marquee Animation */
+@keyframes marqueeMove {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  white-space: nowrap;
+  animation: marqueeMove 30s linear infinite;
+}
+
+.container {
+  max-width: var(--container-max-w);
+  margin: 0 auto;
+  padding: 0 2.5rem;
 }
 
 /* Custom Glassmorphic and Glow Styles */
@@ -51,7 +191,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #060806;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -60,5 +200,113 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: var(--aura-mint);
+}
+
+/* ==========================================================================
+   OFFICIAL SINGLE-PAGE PAYSLIP PRINT ALIGNMENT
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide all dashboard chrome during print */
+  aside,
+  header,
+  nav,
+  .no-print,
+  .print-hide,
+  .modal-control-bar {
+    display: none !important;
+  }
+
+  /* Reset modal overlays for direct page printing */
+  .payslip-modal-backdrop {
+    position: static !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .payslip-modal-card {
+    position: static !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 0 !important;
+  }
+
+  .printable-payslip-content {
+    background: #ffffff !important;
+    color: #111827 !important;
+    padding: 16px 20px !important;
+    border: 1.5px solid #9ca3af !important;
+    border-radius: 8px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .print-light-card {
+    background: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    color: #111827 !important;
+  }
+
+  .print-light-table th {
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 1px solid #d1d5db !important;
+  }
+
+  .print-light-table td {
+    color: #1f2937 !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+  }
+
+  .print-net-card {
+    background: #ecfdf5 !important;
+    border: 1.5px solid #059669 !important;
+    color: #065f46 !important;
+  }
+
+  .print-text-dark {
+    color: #111827 !important;
+  }
+
+  .print-text-muted {
+    color: #4b5563 !important;
+  }
+
+  .print-text-emerald {
+    color: #059669 !important;
+  }
+
+  .print-text-rose {
+    color: #dc2626 !important;
+  }
 }

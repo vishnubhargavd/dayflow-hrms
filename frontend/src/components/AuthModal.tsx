@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Lock, Mail, Eye, EyeOff, Shield, Check, Sparkles, UserCheck } from 'lucide-react';
+import { X, Lock, Mail, Eye, EyeOff, Shield, Sparkles, UserCheck, ArrowRight, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Role } from '../types';
 
@@ -10,15 +10,16 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { switchRole } = useAuth();
+  const { login } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role>('HR');
   const [email, setEmail] = useState('sarah.jenkins@dayflow.com');
+  const [fullName, setFullName] = useState('Sarah Jenkins');
   const [password, setPassword] = useState('Password@123');
   const [showPassword, setShowPassword] = useState(false);
   const [employeeId, setEmployeeId] = useState('OIHR20220001');
   const [rememberMe, setRememberMe] = useState(true);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -35,18 +36,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
   const strengthColors = ['bg-rose-500', 'bg-amber-500', 'bg-sky-500', 'bg-emerald-500'];
 
+  const handleQuickDemoLogin = (role: Role) => {
+    setIsLoading(true);
+    const demoEmail = role === 'HR' ? 'sarah.jenkins@dayflow.com' : role === 'ADMIN' ? 'admin@dayflow.com' : 'priya.sharma@dayflow.com';
+    const demoName = role === 'HR' ? 'Sarah Jenkins' : role === 'ADMIN' ? 'Ameer Admin' : 'Priya Sharma';
+    login(role, demoEmail, demoName);
+    setIsLoading(false);
+    onClose();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    switchRole(selectedRole);
-    setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      onClose();
-    }, 1000);
+    setIsLoading(true);
+    login(selectedRole, email, fullName || (selectedRole === 'HR' ? 'Sarah Jenkins' : 'Priya Sharma'));
+    setIsLoading(false);
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -74,15 +82,61 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
+        {/* 1-Click Instant Demo Login Access Strip */}
+        <div className="p-4 bg-zinc-950/90 border-b border-zinc-800">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              1-Click Instant Demo Sign In
+            </span>
+            <span className="text-[10px] text-zinc-500">Instant Access</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleQuickDemoLogin('HR')}
+              disabled={isLoading}
+              className="p-2.5 rounded-xl bg-zinc-900 hover:bg-emerald-950/40 border border-zinc-800 hover:border-emerald-500/50 text-left transition-all group cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-xs font-bold text-white group-hover:text-emerald-300">HR Admin</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <p className="text-[10px] text-zinc-400 mt-0.5">Sarah Jenkins (Full Access)</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickDemoLogin('EMPLOYEE')}
+              disabled={isLoading}
+              className="p-2.5 rounded-xl bg-zinc-900 hover:bg-sky-950/40 border border-zinc-800 hover:border-sky-500/50 text-left transition-all group cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="text-xs font-bold text-white group-hover:text-sky-300">Employee</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+              <p className="text-[10px] text-zinc-400 mt-0.5">Priya Sharma (Self-Service)</p>
+            </button>
+          </div>
+        </div>
+
         {/* Role Selector Pill */}
         <div className="p-4 bg-zinc-950/70 border-b border-zinc-800">
-          <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Select Access Persona</label>
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Select Persona / Role</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => {
                 setSelectedRole('HR');
                 setEmail('sarah.jenkins@dayflow.com');
+                setFullName('Sarah Jenkins');
               }}
               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 selectedRole === 'HR' || selectedRole === 'ADMIN'
@@ -98,6 +152,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               onClick={() => {
                 setSelectedRole('EMPLOYEE');
                 setEmail('priya.sharma@dayflow.com');
+                setFullName('Priya Sharma');
               }}
               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 selectedRole === 'EMPLOYEE'
@@ -114,20 +169,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {isSignUp && (
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Company Issued Employee ID</label>
-              <input
-                type="text"
-                placeholder="e.g. OIPRSH20240004"
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Company Employee ID *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. OIPRSH20240004"
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Full Name *</label>
+                <div className="relative">
+                  <User className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Priya Sharma"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+            </>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Work Email Address</label>
+            <label className="block text-xs font-semibold text-zinc-300 mb-1">Work Email Address *</label>
             <div className="relative">
               <Mail className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -142,7 +215,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-semibold text-zinc-300">Password</label>
+              <label className="text-xs font-semibold text-zinc-300">Password *</label>
               {!isSignUp && (
                 <span className="text-[11px] text-emerald-400 hover:underline cursor-pointer">
                   Forgot Password?
@@ -200,16 +273,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <button
             type="submit"
-            disabled={isSuccess}
-            className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            disabled={isLoading}
+            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            {isSuccess ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span>Authenticated Successfully!</span>
-              </>
+            {isLoading ? (
+              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <span>{isSignUp ? 'Create Account & Sign In' : 'Sign In to Workspace'}</span>
+              <span>{isSignUp ? 'Create Account & Continue' : `Sign In to ${selectedRole === 'HR' ? 'HR Admin Portal' : 'Employee Portal'}`}</span>
             )}
           </button>
 

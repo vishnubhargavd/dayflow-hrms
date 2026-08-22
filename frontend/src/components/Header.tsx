@@ -193,8 +193,12 @@ export const Header: React.FC<HeaderProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* User Profile Avatar with Quick Sign Out */}
+        {/* User Profile Avatar with Quick Role Switch & Sign Out */}
         <div className="flex items-center gap-2 pl-2 border-l border-zinc-800">
+          <div className="hidden sm:flex flex-col text-right">
+            <span className="text-xs font-bold text-white">{user.name}</span>
+            <span className="text-[10px] font-mono text-emerald-400">{user.role === 'EMPLOYEE' ? 'Employee' : 'HR Admin'}</span>
+          </div>
           <img
             src={user.avatar}
             alt={user.name}
@@ -202,10 +206,10 @@ export const Header: React.FC<HeaderProps> = ({
           />
           <button
             onClick={logout}
-            title="Sign Out"
-            className="hidden sm:flex p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-900 transition-colors cursor-pointer"
+            title="Sign Out & Return to Landing"
+            className="flex p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-900 transition-colors cursor-pointer"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>

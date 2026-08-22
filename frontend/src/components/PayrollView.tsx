@@ -224,10 +224,10 @@ export const PayrollView: React.FC = () => {
           onClose={() => setSelectedPayslip(null)}
           month={selectedPayslip.month}
           wage={selectedPayslip.gross}
-          employeeName="John Doe"
-          employeeId="OIJODO20220001"
-          department="Engineering"
-          designation="Senior Backend Engineer"
+          employeeName={user.name || 'Priya Sharma'}
+          employeeId={user.loginId || 'OIPRSH20240004'}
+          department={user.departmentName || 'Engineering'}
+          designation={user.designationTitle || 'Software Engineer'}
         />
       )}
     </div>

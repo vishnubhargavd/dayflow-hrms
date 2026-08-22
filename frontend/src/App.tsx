@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
-import { LoginPage } from './components/LoginPage';
+import { HealthProvider } from './context/HealthContext';
+import { EntryExperience } from './components/entry/EntryExperience';
+import { LandingPage } from './pages/LandingPage';
+import { AuthModal } from './components/AuthModal';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { MainDashboard } from './components/MainDashboard';
@@ -30,6 +33,11 @@ function AppContent() {
   const { employees, addEmployee, updateEmployee } = useData();
   const isHRorAdmin = user.role === 'ADMIN' || user.role === 'HR';
 
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    // Only show intro if user is not already logged in
+    return !localStorage.getItem('dayflow_auth');
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -58,9 +66,27 @@ function AppContent() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // If not logged in, show full-page Login screen in the beginning
+  // When not authenticated, show Cinematic Intro & Signature Landing Experience
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return (
+      <div className="relative min-h-screen bg-[#060806] text-[#F3F1E8]">
+        {/* Full Cinematic Multi-Scene Entrance */}
+        {showIntro && (
+          <EntryExperience onComplete={() => setShowIntro(false)} />
+        )}
+
+        {/* Complete Modern Landing Page */}
+        <LandingPage
+          onNavigateToDashboard={() => setIsAuthModalOpen(true)}
+        />
+
+        {/* 1-Click Persona & Credentials Login Modal */}
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
+      </div>
+    );
   }
 
   const handleOpenDrawer = (emp: Employee, tab: 'profile' | 'salary' | 'attendance' = 'profile') => {
@@ -301,7 +327,9 @@ export default function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <AppContent />
+        <HealthProvider>
+          <AppContent />
+        </HealthProvider>
       </DataProvider>
     </AuthProvider>
   );

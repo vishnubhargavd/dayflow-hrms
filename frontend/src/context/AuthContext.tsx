@@ -102,7 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const switchRole = (role: Role) => {
     setCurrentRole(role);
-    setUser(DEMO_PROFILES[role]);
+    setUser(DEMO_PROFILES[role] || DEMO_PROFILES.HR);
+    setIsAuthenticated(true);
+    localStorage.setItem('dayflow_auth', 'true');
     localStorage.setItem('dayflow_role', role);
   };
 

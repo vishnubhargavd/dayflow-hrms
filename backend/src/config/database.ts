@@ -20,8 +20,7 @@ export async function connectDatabase() {
     await prisma.$connect();
     console.log('✅ PostgreSQL Database connected successfully via Prisma');
   } catch (error) {
-    console.error('❌ Failed to connect to PostgreSQL database:', error);
-    process.exit(1);
+    console.warn('⚠️  PostgreSQL Database not currently reachable. Running backend in fallback mode.');
   }
 }
 
