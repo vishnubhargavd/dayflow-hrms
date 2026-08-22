@@ -8,7 +8,7 @@ Dayflow is a modern, modular, scalable Human Resource Management System (HRMS) b
 - **Ameer**: `feature/ameer-foundation-auth` — Backend Architecture, Auth, RBAC, User/Employee Management, Profiles, Security, Audit Logs
 - **Abhinav**: `feature/abhinav-attendance-ai` — Attendance, Check-in/out, Working Hours, Analytics, AI HR Assistant
 - **Vishnu**: `feature/vishnu-leave-helpdesk` — Leave/Time Off, Balances, Approvals, Notifications, Helpdesk
-- **Joshith**: `feature/joshith-payroll-performance-recruitment` — Payroll, Payslips, Performance, Recruitment, Onboarding, Reports
+- **Joshith**: `feature/joshith-payroll-performance-recruitment` — Payroll, Payslips, Performance, Recruitment, Onboarding, Reports.
 
 ## Technology Stack
 
