@@ -291,8 +291,7 @@ export async function approveLeaveRequestService(requestId: string, reviewerEmpl
       const curr = new Date(request.startDate);
       const end = new Date(request.endDate);
       while (curr <= end) {
-        const dateOnly = new Date(curr);
-        dateOnly.setHours(0, 0, 0, 0);
+        const dateOnly = new Date(Date.UTC(curr.getUTCFullYear(), curr.getUTCMonth(), curr.getUTCDate(), 0, 0, 0, 0));
 
         await tx.attendance.upsert({
           where: {
@@ -310,7 +309,7 @@ export async function approveLeaveRequestService(requestId: string, reviewerEmpl
             status: AttendanceStatus.LEAVE,
           },
         });
-        curr.setDate(curr.getDate() + 1);
+        curr.setUTCDate(curr.getUTCDate() + 1);
       }
     } catch (attErr) {
       console.warn('Attendance sync non-fatal notice:', attErr);

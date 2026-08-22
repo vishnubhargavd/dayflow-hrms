@@ -222,18 +222,52 @@ export async function getTodayAttendanceService(userContext: JwtPayload) {
     },
   });
 
-  if (!record) {
+  // Check if employee is on approved leave today
+  const todayLeave = prisma.leaveRequest?.findFirst
+    ? await prisma.leaveRequest.findFirst({
+        where: {
+          employeeId,
+          status: 'APPROVED',
+          startDate: { lte: todayDate },
+          endDate: { gte: todayDate },
+        },
+        include: { leaveType: true },
+      })
+    : null;
+
+  if (todayLeave) {
+    return {
+      date: todayDate,
+      status: 'ON_LEAVE',
+      systrayState: 'leave',
+      badgeColor: 'BLUE',
+      icon: 'airplane',
+      message: `On approved leave today (${todayLeave.leaveType.name}).`,
+      record: record || null,
+      leave: todayLeave,
+    };
+  }
+
+  if (!record || !record.checkIn) {
     return {
       date: todayDate,
       status: 'NOT_CHECKED_IN',
+      systrayState: 'absent',
+      badgeColor: 'YELLOW',
+      icon: 'clock',
       message: 'No check-in record found for today.',
       record: null,
     };
   }
 
+  const isCheckedOut = Boolean(record.checkOut);
+
   return {
     date: record.date,
-    status: record.checkOut ? 'CHECKED_OUT' : 'CHECKED_IN',
+    status: isCheckedOut ? 'CHECKED_OUT' : 'CHECKED_IN',
+    systrayState: isCheckedOut ? 'checked_out' : 'present',
+    badgeColor: isCheckedOut ? 'GRAY' : 'GREEN',
+    icon: isCheckedOut ? 'check-circle' : 'user-check',
     record,
   };
 }

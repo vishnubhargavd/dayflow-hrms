@@ -731,3 +731,65 @@ export async function getEmployeeOwnPayslipByIdService(employeeId: string, paysl
     breakdown,
   };
 }
+
+// ==========================================
+// DYNAMIC SALARY / WAGE COMPUTATION ENGINE
+// ==========================================
+
+export interface DynamicWageBreakdown {
+  monthlyWage: number;
+  yearlyWage: number;
+  basicSalary: number;
+  hra: number;
+  performanceBonus: number;
+  leaveTravelAllowance: number;
+  standardAllowance: number;
+  fixedAllowance: number;
+  pfEmployee: number;
+  pfEmployer: number;
+  professionalTax: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  netSalary: number;
+}
+
+export function computeDynamicWageBreakdown(monthlyWage: number): DynamicWageBreakdown {
+  const round2 = (num: number) => Math.round(num * 100) / 100;
+
+  const yearlyWage = round2(monthlyWage * 12);
+  const basicSalary = round2(monthlyWage * 0.5);
+  const hra = round2(basicSalary * 0.5);
+  const performanceBonus = round2(basicSalary * 0.0833);
+  const leaveTravelAllowance = round2(basicSalary * 0.08333);
+  const standardAllowance = 4167.0;
+
+  const componentSum = basicSalary + hra + performanceBonus + leaveTravelAllowance + standardAllowance;
+  const fixedAllowance = round2(monthlyWage - componentSum);
+
+  const pfEmployee = round2(basicSalary * 0.12);
+  const pfEmployer = round2(basicSalary * 0.12);
+  const professionalTax = 200.0;
+
+  const totalEarnings = round2(
+    basicSalary + hra + performanceBonus + leaveTravelAllowance + standardAllowance + Math.max(0, fixedAllowance)
+  );
+  const totalDeductions = round2(pfEmployee + professionalTax);
+  const netSalary = round2(totalEarnings - totalDeductions);
+
+  return {
+    monthlyWage,
+    yearlyWage,
+    basicSalary,
+    hra,
+    performanceBonus,
+    leaveTravelAllowance,
+    standardAllowance,
+    fixedAllowance,
+    pfEmployee,
+    pfEmployer,
+    professionalTax,
+    totalEarnings,
+    totalDeductions,
+    netSalary,
+  };
+}
