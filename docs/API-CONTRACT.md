@@ -77,6 +77,8 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Attendance | `/api/v1/attendance` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
 | Attendance | `/api/v1/attendance/weekly` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
 | Attendance | `/api/v1/attendance/monthly` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
+| Attendance | `/api/v1/attendance/insights` | GET | Bearer JWT | All (Personal smart insights scoped to self) |
+| Attendance | `/api/v1/attendance/insights/overview` | GET | Bearer JWT | ADMIN, HR |
 | Attendance | `/api/v1/attendance/analytics` | GET | Bearer JWT | All (Personal metrics scoped to self) |
 | Attendance | `/api/v1/attendance/analytics/overview` | GET | Bearer JWT | ADMIN, HR |
 | Attendance | `/api/v1/attendance/analytics/departments` | GET | Bearer JWT | ADMIN, HR |
@@ -88,7 +90,7 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Notifications | `/api/v1/notifications` | GET | Bearer JWT | Vishnu |
 | Helpdesk | `/api/v1/helpdesk` | GET | Bearer JWT | Vishnu |
 | Reports | `/api/v1/reports` | GET | Bearer JWT | Joshith |
-| AI Assistant | `/api/v1/ai/query` | POST | Bearer JWT | Abhinav |
+| AI Assistant | `/api/v1/ai/query` | POST | Bearer JWT | All (Role-scoped contextual intelligence) |
 | Audit Logs | `/api/v1/audit` | GET | Bearer JWT | ADMIN |
 
 ---
@@ -109,8 +111,29 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
    $$\text{averageWorkingHours} = \frac{\text{totalWorkingHours}}{\text{presentDays} + \text{halfDays}}$$
 
 ### RBAC Summary
+- `GET /api/v1/attendance/insights`: Accessible to all authenticated users (personal contextual insights).
+- `GET /api/v1/attendance/insights/overview`: `ADMIN`, `HR` only (organization & department intelligence).
 - `GET /api/v1/attendance/analytics`: Accessible to all authenticated users (strictly scoped to own `employeeId`).
 - `GET /api/v1/attendance/analytics/overview`: `ADMIN`, `HR` only.
 - `GET /api/v1/attendance/analytics/departments`: `ADMIN`, `HR` only.
 - `GET /api/v1/attendance/analytics/trend`: `ADMIN`, `HR` only.
 - `GET /api/v1/attendance/analytics/low-attendance`: `ADMIN`, `HR` only.
+
+---
+
+## Smart HR Intelligence & Insights Engine
+
+The Smart Insights layer analyzes database records locally (without third-party or external AI APIs) and surfaces contextual cards on employee & HR dashboards:
+
+### Personal Employee Insights
+- **Low Attendance Alert** (`WARNING`): Triggered when attendance rate $< 80\%$.
+- **Perfect Attendance** (`SUCCESS`): Triggered when attendance rate is $100\%$ over $\ge 5$ recorded days.
+- **Period Comparison** (`SUCCESS` / `WARNING`): Measures month-over-month attendance rate delta ($\Delta \ge +1\%$ improvement or $\Delta \le -2\%$ dip).
+- **Overtime Surge** (`WARNING`): Triggered when monthly overtime $\ge 10.0$ hours.
+- **Department Benchmark** (`SUCCESS`): Highlights when an employee's attendance is above the department average.
+
+### Organization & HR Insights
+- **Workforce Watchlist** (`WARNING`): Aggregates count of employees with attendance $< 80\%$.
+- **Top Department Attendance** (`SUCCESS`): Highlights top-performing departments ($\ge 85\%$).
+- **Department Attendance Concern** (`WARNING`): Flags lowest-performing department $(< 80\%$).
+- **Department Overtime Surge** (`INFO`): Detects departments with $\ge 20$ hours of aggregate overtime.

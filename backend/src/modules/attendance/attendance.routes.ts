@@ -11,6 +11,8 @@ import {
   getDepartmentAnalyticsController,
   getTrendAnalyticsController,
   getLowAttendanceController,
+  getPersonalInsightsController,
+  getOrganizationInsightsController,
 } from './attendance.controller';
 import { authenticate } from '../../middleware/auth.middleware';
 import { authorize } from '../../middleware/role.middleware';
@@ -41,6 +43,20 @@ router.get('/today', getTodayAttendanceController);
 // Weekly & Monthly Summary Views
 router.get('/weekly', validateQuery(weeklyAttendanceQuerySchema), getWeeklyAttendanceController);
 router.get('/monthly', validateQuery(monthlyAttendanceQuerySchema), getMonthlyAttendanceController);
+
+// ==========================================
+// SMART HR INTELLIGENCE / INSIGHTS ENDPOINTS
+// ==========================================
+
+// Organization & Department Level Smart Insights (ADMIN / HR)
+router.get(
+  '/insights/overview',
+  authorize(Role.ADMIN, Role.HR),
+  getOrganizationInsightsController
+);
+
+// Personal Smart Contextual Insights (Scoped to Self)
+router.get('/insights', getPersonalInsightsController);
 
 // ==========================================
 // HR ATTENDANCE ANALYTICS ENDPOINTS

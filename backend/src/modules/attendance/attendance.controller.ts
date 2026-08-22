@@ -14,6 +14,10 @@ import {
   getAttendanceTrendService,
   getLowAttendanceEmployeesService,
 } from './attendance.analytics.service';
+import {
+  generatePersonalSmartInsights,
+  generateOrganizationSmartInsights,
+} from './attendance.insights.service';
 import { sendSuccess, sendPaginated } from '../../utils/response.util';
 import { JwtPayload } from '../../utils/jwt.util';
 
@@ -122,6 +126,49 @@ export async function getLowAttendanceController(req: Request, res: Response, ne
   try {
     const result = await getLowAttendanceEmployeesService(req.query);
     return sendSuccess(res, result, 'Low attendance employees report retrieved successfully');
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// ==========================================
+// SMART HR INTELLIGENCE / INSIGHTS CONTROLLERS
+// ==========================================
+
+export async function getPersonalInsightsController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userContext = req.user as JwtPayload;
+    const month = req.query.month ? parseInt(req.query.month as string, 10) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string, 10) : undefined;
+
+    const insights = await generatePersonalSmartInsights(userContext, { month, year });
+    return sendSuccess(
+      res,
+      {
+        count: insights.length,
+        insights,
+      },
+      'Personal smart insights generated successfully'
+    );
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function getOrganizationInsightsController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const month = req.query.month ? parseInt(req.query.month as string, 10) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string, 10) : undefined;
+
+    const insights = await generateOrganizationSmartInsights({ month, year });
+    return sendSuccess(
+      res,
+      {
+        count: insights.length,
+        insights,
+      },
+      'Organization smart insights generated successfully'
+    );
   } catch (error) {
     return next(error);
   }
