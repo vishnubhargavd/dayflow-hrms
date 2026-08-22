@@ -793,3 +793,4 @@ export function computeDynamicWageBreakdown(monthlyWage: number): DynamicWageBre
     netSalary,
   };
 }
+
