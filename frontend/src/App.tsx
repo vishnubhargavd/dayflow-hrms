@@ -1,95 +1,119 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthPage } from './components/AuthPage';
 import { Navbar } from './components/Navbar';
 import { EmployeeKanban } from './components/EmployeeKanban';
-import { ProfileDrawer } from './components/ProfileDrawer';
-import { LeaveApprovalQueue } from './components/LeaveApprovalQueue';
-import { AttendanceView } from './components/AttendanceView';
-import { PayrollView } from './components/PayrollView';
-import { SmartInsightsBanner } from './components/SmartInsightsBanner';
+import { ProfileFormView } from './components/ProfileFormView';
+import { AttendancePage } from './components/AttendancePage';
+import { TimeOffPage } from './components/TimeOffPage';
+import { CreateEmployeeModal } from './components/CreateEmployeeModal';
 import { Employee } from './types';
+import { api, INITIAL_EMPLOYEES } from './services/api';
 
 function DashboardContent() {
+  const { user } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [activeTab, setActiveTab] = useState<string>('employees');
-  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  const [drawerInitialTab, setDrawerInitialTab] = useState<'profile' | 'salary' | 'attendance'>('profile');
+  const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const handleOpenDrawer = (emp: any, tab: 'profile' | 'salary' | 'attendance' = 'profile') => {
-    setSelectedEmployee(emp);
-    setDrawerInitialTab(tab);
+  useEffect(() => {
+    api.getEmployees().then((data) => setEmployees(data || INITIAL_EMPLOYEES));
+  }, []);
+
+  const handleSelectEmployee = (emp: any) => {
+    // Find full matching employee or use selected
+    const found = employees.find((e) => e.id === emp.id || e.loginId === emp.loginId) || emp;
+    setSelectedEmployee(found);
   };
 
-  const handleCloseDrawer = () => {
-    setSelectedEmployee(null);
+  const handleOpenMyProfile = () => {
+    const myEmp = employees.find((e) => e.loginId === user.loginId || e.id === user.employeeId) || employees[0];
+    setSelectedEmployee(myEmp);
+    setActiveTab('employees');
   };
+
+  const handleEmployeeCreated = (newEmp: Employee) => {
+    setEmployees([newEmp, ...employees]);
+  };
+
+  if (!isAuthenticated) {
+    return <AuthPage onSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      {/* Top Glass Navbar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-purple-500/30 selection:text-purple-200">
+      {/* Top Global Navigation Bar & Systray */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          setSelectedEmployee(null);
+        }}
+        onOpenMyProfile={handleOpenMyProfile}
+        onLogout={() => setIsAuthenticated(false)}
+      />
 
-      {/* Main View Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content Area */}
+      <main className="flex-1 w-full">
         <AnimatePresence mode="wait">
           {activeTab === 'employees' && (
             <motion.div
-              key="employees"
-              initial={{ opacity: 0, y: 10 }}
+              key={selectedEmployee ? 'profile-view' : 'kanban-view'}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
             >
-              <EmployeeKanban onSelectEmployee={handleOpenDrawer} />
+              {selectedEmployee ? (
+                <ProfileFormView
+                  employee={selectedEmployee}
+                  onBack={() => setSelectedEmployee(null)}
+                />
+              ) : (
+                <EmployeeKanban
+                  employees={employees}
+                  onSelectEmployee={handleSelectEmployee}
+                  onOpenCreateModal={() => setIsCreateModalOpen(true)}
+                />
+              )}
             </motion.div>
           )}
 
           {activeTab === 'attendance' && (
             <motion.div
               key="attendance"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
             >
-              <AttendanceView />
+              <AttendancePage />
             </motion.div>
           )}
 
           {activeTab === 'timeoff' && (
             <motion.div
               key="timeoff"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
             >
-              <LeaveApprovalQueue />
-            </motion.div>
-          )}
-
-          {activeTab === 'payroll' && (
-            <motion.div
-              key="payroll"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <PayrollView />
+              <TimeOffPage />
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* Slide-over Profile and Salary Drawer */}
-      {selectedEmployee && (
-        <ProfileDrawer
-          employee={selectedEmployee}
-          onClose={handleCloseDrawer}
-          initialTab={drawerInitialTab}
-        />
-      )}
+      {/* Create Employee Modal for Admin / HR */}
+      <CreateEmployeeModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onEmployeeCreated={handleEmployeeCreated}
+      />
     </div>
   );
 }

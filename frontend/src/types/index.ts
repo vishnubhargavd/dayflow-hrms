@@ -9,6 +9,9 @@ export interface User {
   email: string;
   role: Role;
   employeeId?: string;
+  name?: string;
+  companyName?: string;
+  companyLogo?: string;
 }
 
 export interface Employee {
@@ -18,25 +21,52 @@ export interface Employee {
   lastName: string;
   personalEmail?: string;
   phone?: string;
+  company?: string;
+  location?: string;
   joiningYear: number;
   dateOfJoining: string;
   employeeStatus: 'ACTIVE' | 'PROBATION' | 'NOTICE_PERIOD' | 'TERMINATED';
   profilePicture?: string;
-  department?: { id: string; name: string; code: string };
-  designation?: { id: string; title: string };
-  manager?: { id: string; firstName: string; lastName: string };
+  department?: { id: string; name: string; code: string } | string;
+  designation?: { id: string; title: string } | string;
+  jobTitle?: string;
+  manager?: { id: string; firstName: string; lastName: string } | string;
   user?: { email: string; role: Role; accountStatus: string };
   monthlyWage?: number;
+  
+  // Resume / Bio
+  about?: string;
+  whatILoveAboutJob?: string;
+  interestsHobbies?: string;
+  skills?: string[];
+  certifications?: string[];
+
+  // Private Info
+  dateOfBirth?: string;
+  residingAddress?: string;
+  nationality?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  maritalStatus?: 'SINGLE' | 'MARRIED' | 'DIVORCED';
+
+  // Bank & Statutory
   bankName?: string;
   accountNumber?: string;
   ifscCode?: string;
   panNumber?: string;
+  uanNumber?: string;
+  empCode?: string;
+
+  // Live Presence
   todayStatus?: 'PRESENT' | 'HALF_DAY' | 'ON_LEAVE' | 'ABSENT' | 'NOT_CHECKED_IN';
+  status?: 'present' | 'leave' | 'absent' | string;
 }
 
 export interface AttendanceRecord {
   id: string;
   employeeId: string;
+  employeeName?: string;
+  loginId?: string;
+  department?: string;
   date: string;
   checkIn?: string | null;
   checkOut?: string | null;
@@ -52,6 +82,7 @@ export interface TodayAttendance {
   badgeColor: 'GREEN' | 'BLUE' | 'YELLOW' | 'GRAY';
   icon: string;
   message?: string;
+  checkInTime?: string;
   record?: AttendanceRecord | null;
 }
 
@@ -63,7 +94,7 @@ export interface LeaveRequest {
     firstName: string;
     lastName: string;
     loginId: string;
-    department?: { name: string };
+    department?: { name: string } | string;
   };
   leaveTypeId: string;
   leaveType: {
@@ -77,6 +108,7 @@ export interface LeaveRequest {
   totalDays: number;
   reason: string;
   status: LeaveStatus;
+  attachmentName?: string;
   reviewerComment?: string;
   createdAt: string;
 }

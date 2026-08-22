@@ -220,7 +220,7 @@ export const LeaveApprovalQueue: React.FC = () => {
                               {req.employee.firstName} {req.employee.lastName}
                             </p>
                             <span className="text-[10px] font-mono text-zinc-400">
-                              {req.employee.loginId} • {req.employee.department?.name || 'Engineering'}
+                              {req.employee.loginId} • {typeof req.employee.department === 'string' ? req.employee.department : req.employee.department?.name || 'Engineering'}
                             </span>
                           </div>
                         </div>

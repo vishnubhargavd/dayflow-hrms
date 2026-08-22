@@ -83,7 +83,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ employee, onClose,
                       </span>
                     </div>
                     <p className="text-xs text-zinc-400 font-medium">
-                      {employee.designation?.title} • {employee.department?.name}
+                      {typeof employee.designation === 'string' ? employee.designation : employee.designation?.title || 'Staff'} • {typeof employee.department === 'string' ? employee.department : employee.department?.name || 'General'}
                     </p>
                   </div>
                 </div>
@@ -148,8 +148,8 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ employee, onClose,
                         <Building className="w-3 h-3 text-indigo-400" />
                         Department
                       </span>
-                      <p className="text-sm font-semibold text-zinc-200">{employee.department?.name || 'General'}</p>
-                      <span className="text-[10px] text-zinc-400 font-mono">Code: {employee.department?.code}</span>
+                      <p className="text-sm font-semibold text-zinc-200">{typeof employee.department === 'string' ? employee.department : employee.department?.name || 'General'}</p>
+                      <span className="text-[10px] text-zinc-400 font-mono">Code: {typeof employee.department === 'string' ? 'GEN' : employee.department?.code || 'GEN'}</span>
                     </div>
 
                     <div className="p-4 rounded-xl glass-panel border border-zinc-800/80">
