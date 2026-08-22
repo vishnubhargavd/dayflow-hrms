@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import { loginController, changePasswordController, getMeController } from './auth.controller';
+import { loginController, registerController, changePasswordController, getMeController } from './auth.controller';
 import { validateBody } from '../../middleware/validation.middleware';
-import { loginSchema, changePasswordSchema } from './auth.validation';
+import { loginSchema, registerSchema, changePasswordSchema } from './auth.validation';
 import { authenticate } from '../../middleware/auth.middleware';
 
 const router = Router();
 
-// Public login endpoint
+// Public auth endpoints
 router.post('/login', validateBody(loginSchema), loginController);
+router.post('/register', validateBody(registerSchema), registerController);
 
 // Protected endpoints
 router.post('/change-password', authenticate, validateBody(changePasswordSchema), changePasswordController);

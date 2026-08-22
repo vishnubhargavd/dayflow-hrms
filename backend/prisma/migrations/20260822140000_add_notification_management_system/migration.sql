@@ -1,0 +1,25 @@
+-- Incremental Migration for Notification Management System
+
+-- AlterEnum
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'LEAVE_SUBMITTED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'LEAVE_APPROVED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'LEAVE_REJECTED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'LEAVE_CANCELLED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'HELPDESK_CREATED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'HELPDESK_ASSIGNED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'HELPDESK_UPDATED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'HELPDESK_RESOLVED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'HELPDESK_CLOSED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'PAYROLL_PROCESSED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'PAYSLIP_AVAILABLE';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'SALARY_UPDATED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'PERFORMANCE_REVIEW';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'GOAL_ASSIGNED';
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'SYSTEM_ALERT';
+
+-- AlterTable: Add readAt column to Notification
+ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS "readAt" TIMESTAMP(3);
+
+-- CreateIndex: Add performance indexes for notifications
+CREATE INDEX IF NOT EXISTS "Notification_userId_createdAt_idx" ON "Notification"("userId", "createdAt");
+CREATE INDEX IF NOT EXISTS "Notification_type_idx" ON "Notification"("type");

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { loginService, changePasswordService, getCurrentUserService } from './auth.service';
+import { loginService, registerService, changePasswordService, getCurrentUserService } from './auth.service';
 import { sendSuccess } from '../../utils/response.util';
 
 export async function loginController(req: Request, res: Response, next: NextFunction) {
@@ -8,6 +8,16 @@ export async function loginController(req: Request, res: Response, next: NextFun
     const ipAddress = req.ip || req.socket.remoteAddress;
     const result = await loginService(loginIdOrEmail, password, ipAddress);
     return sendSuccess(res, result, 'Login successful');
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function registerController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { fullName, email, password } = req.body;
+    const result = await registerService(fullName, email, password);
+    return sendSuccess(res, result, 'Registration successful', 201);
   } catch (error) {
     return next(error);
   }

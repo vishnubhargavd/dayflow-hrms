@@ -122,6 +122,7 @@ async function main() {
   // 6. Seed Employee User & Profile
   const empUser = await prisma.user.upsert({
     where: { email: 'employee@dayflow.com' },
+    include: { employee: true },
     update: {},
     create: {
       loginId: 'OIJODO20260001',

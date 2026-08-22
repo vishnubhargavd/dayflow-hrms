@@ -2,7 +2,7 @@ import { prisma } from '../../config/database';
 import { comparePassword, hashPassword } from '../../utils/password.util';
 import { signToken } from '../../utils/jwt.util';
 import { AppError } from '../../middleware/error.middleware';
-import { AccountStatus } from '@prisma/client';
+import { AccountStatus, EmployeeStatus, Role } from '@prisma/client';
 
 export async function loginService(loginIdOrEmail: string, password: string, ipAddress?: string) {
   // 1. Find user by email or loginId
@@ -58,6 +58,84 @@ export async function loginService(loginIdOrEmail: string, password: string, ipA
   });
 
   // 5. Generate JWT token
+  const token = signToken({
+    userId: user.id,
+    loginId: user.loginId,
+    email: user.email,
+    role: user.role,
+    employeeId: user.employee?.id,
+    requiresPasswordChange: user.requiresPasswordChange,
+  });
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      loginId: user.loginId,
+      email: user.email,
+      role: user.role,
+      accountStatus: user.accountStatus,
+      requiresPasswordChange: user.requiresPasswordChange,
+      employee: user.employee,
+    },
+  };
+}
+
+export async function registerService(fullName: string, email: string, password: string) {
+  const cleanEmail = email.toLowerCase().trim();
+  const existingUser = await prisma.user.findFirst({
+    where: { email: cleanEmail },
+  });
+
+  if (existingUser) {
+    throw new AppError('An account with this email already exists.', 400, 'USER_EXISTS');
+  }
+
+  const parts = fullName.trim().split(' ');
+  const firstName = parts[0] || 'User';
+  const lastName = parts.slice(1).join(' ') || '';
+
+  const year = new Date().getFullYear();
+  const count = await prisma.user.count();
+  const sequenceStr = String(count + 1).padStart(4, '0');
+  const loginId = `OIEMP${year}${sequenceStr}`;
+
+  const passwordHash = await hashPassword(password);
+
+  const user = await prisma.user.create({
+    data: {
+      loginId,
+      email: cleanEmail,
+      passwordHash,
+      role: Role.EMPLOYEE,
+      accountStatus: AccountStatus.ACTIVE,
+      requiresPasswordChange: false,
+      verificationStatus: true,
+      employee: {
+        create: {
+          loginId,
+          firstName,
+          lastName,
+          personalEmail: cleanEmail,
+          joiningYear: year,
+          dateOfJoining: new Date(),
+          employeeStatus: EmployeeStatus.PROBATION,
+        },
+      },
+    },
+    include: {
+      employee: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          department: { select: { name: true } },
+          designation: { select: { title: true } },
+        },
+      },
+    },
+  });
+
   const token = signToken({
     userId: user.id,
     loginId: user.loginId,
