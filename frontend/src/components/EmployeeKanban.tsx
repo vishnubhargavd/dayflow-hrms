@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Briefcase, Mail, Phone, ChevronRight, Sparkles, DollarSign, CalendarCheck } from 'lucide-react';
-import { Employee, Role } from '../types';
+import { Search, ChevronRight, DollarSign } from 'lucide-react';
+import { Employee } from '../types';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { SpotlightCard } from './SpotlightCard';
 
 interface EmployeeKanbanProps {
   onSelectEmployee: (emp: Employee, defaultTab?: 'profile' | 'salary' | 'attendance') => void;
@@ -43,24 +44,28 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee
           label: 'Present',
           dot: 'bg-emerald-400',
           bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
+          spotlight: 'rgba(16, 185, 129, 0.18)',
         };
       case 'ON_LEAVE':
         return {
           label: 'On Leave',
           dot: 'bg-sky-400',
           bg: 'bg-sky-500/10 border-sky-500/30 text-sky-300',
+          spotlight: 'rgba(56, 189, 248, 0.18)',
         };
       case 'HALF_DAY':
         return {
           label: 'Half Day',
           dot: 'bg-indigo-400',
           bg: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300',
+          spotlight: 'rgba(99, 102, 241, 0.18)',
         };
       default:
         return {
           label: 'Absent / Out',
           dot: 'bg-amber-400',
           bg: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
+          spotlight: 'rgba(251, 191, 36, 0.15)',
         };
     }
   };
@@ -116,7 +121,7 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee
         })}
       </div>
 
-      {/* Kanban Grid */}
+      {/* Kanban Grid with GPU-Accelerated SpotlightCards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <AnimatePresence>
           {filteredEmployees.map((emp, index) => {
@@ -128,78 +133,79 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, delay: index * 0.04 }}
+                transition={{ duration: 0.25, delay: index * 0.03 }}
                 whileHover={{ y: -4 }}
-                className="group relative p-5 rounded-2xl glass-panel glass-panel-hover flex flex-col justify-between overflow-hidden cursor-pointer"
-                onClick={() => onSelectEmployee(emp, 'profile')}
               >
-                {/* Ambient Card Background Glow on Hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <SpotlightCard
+                  spotlightColor={statusBadge.spotlight}
+                  className="group p-5 cursor-pointer h-full flex flex-col justify-between"
+                  onClick={() => onSelectEmployee(emp, 'profile')}
+                >
+                  <div>
+                    {/* Top Bar: Login ID & Attendance Dot */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <span className="px-2 py-0.5 rounded-md bg-zinc-900 text-indigo-300 font-mono text-[10px] font-bold border border-zinc-800 group-hover:border-indigo-500/40 transition-colors">
+                        {emp.loginId}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1.5 ${statusBadge.bg}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusBadge.dot} animate-pulse`} />
+                        <span>{statusBadge.label}</span>
+                      </span>
+                    </div>
 
-                <div>
-                  {/* Top Bar: Login ID & Attendance Dot */}
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <span className="px-2 py-0.5 rounded-md bg-zinc-900 text-indigo-300 font-mono text-[10px] font-bold border border-zinc-800 group-hover:border-indigo-500/40 transition-colors">
-                      {emp.loginId}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1.5 ${statusBadge.bg}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusBadge.dot} animate-pulse`} />
-                      <span>{statusBadge.label}</span>
-                    </span>
+                    {/* Avatar & Core Info */}
+                    <div className="flex items-center gap-3.5 mb-4">
+                      <div className="relative">
+                        <img
+                          src={emp.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.firstName}`}
+                          alt={emp.firstName}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800 group-hover:border-indigo-500 transition-colors"
+                        />
+                      </div>
+                      <div className="truncate">
+                        <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
+                          {emp.firstName} {emp.lastName}
+                        </h4>
+                        <p className="text-xs text-zinc-400 font-medium truncate">{emp.designation?.title || 'Staff'}</p>
+                        <p className="text-[10px] text-zinc-400 truncate">{emp.department?.name || 'General'}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Avatar & Core Info */}
-                  <div className="flex items-center gap-3.5 mb-4">
-                    <div className="relative">
-                      <img
-                        src={emp.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.firstName}`}
-                        alt={emp.firstName}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800 group-hover:border-indigo-500 transition-colors"
-                      />
-                    </div>
-                    <div className="truncate">
-                      <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
-                        {emp.firstName} {emp.lastName}
-                      </h4>
-                      <p className="text-xs text-zinc-400 font-medium truncate">{emp.designation?.title || 'Staff'}</p>
-                      <p className="text-[10px] text-zinc-400 truncate">{emp.department?.name || 'General'}</p>
-                    </div>
-                  </div>
-                </div>
+                  {/* Footer Quick Action Buttons */}
+                  <div className="mt-2 pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-zinc-400 font-mono">
+                      Joined {emp.joiningYear}
+                    </span>
 
-                {/* Footer Quick Action Buttons */}
-                <div className="mt-2 pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-zinc-400 font-mono">
-                    Joined {emp.joiningYear}
-                  </span>
+                    <div className="flex items-center gap-1.5">
+                      {/* Admin Salary Quick Action */}
+                      {user.role === 'ADMIN' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectEmployee(emp, 'salary');
+                          }}
+                          title="View Statutory Salary Breakdown"
+                          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-zinc-800 transition-colors"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" />
+                        </button>
+                      )}
 
-                  <div className="flex items-center gap-1.5">
-                    {/* Admin Salary Quick Action */}
-                    {user.role === 'ADMIN' && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectEmployee(emp, 'salary');
+                          onSelectEmployee(emp, 'profile');
                         }}
-                        title="View Statutory Salary Breakdown"
-                        className="p-1.5 rounded-lg bg-zinc-900 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-zinc-800 transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-zinc-900 group-hover:bg-indigo-600 text-[11px] font-semibold text-zinc-300 group-hover:text-white border border-zinc-800 group-hover:border-indigo-500 transition-all flex items-center gap-1"
                       >
-                        <DollarSign className="w-3.5 h-3.5" />
+                        <span>Details</span>
+                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </button>
-                    )}
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectEmployee(emp, 'profile');
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-zinc-900 group-hover:bg-indigo-600 text-[11px] font-semibold text-zinc-300 group-hover:text-white border border-zinc-800 group-hover:border-indigo-500 transition-all flex items-center gap-1"
-                    >
-                      <span>Details</span>
-                      <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                    </button>
+                    </div>
                   </div>
-                </div>
+                </SpotlightCard>
               </motion.div>
             );
           })}
