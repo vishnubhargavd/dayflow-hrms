@@ -196,6 +196,7 @@ model User {
 
   @@index([loginId])
   @@index([email])
+  @@index([role])
 }
 
 model LoginSequence {
@@ -286,12 +287,15 @@ model Employee {
   helpdeskRequests       HelpdeskRequest[]   @relation("HelpdeskRequester")
   onboardingTasks        OnboardingTask[]
 
+  deletedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([loginId])
   @@index([departmentId])
   @@index([designationId])
+  @@index([deletedAt])
 }
 
 model Document {
@@ -326,8 +330,10 @@ model Attendance {
 
   corrections AttendanceCorrection[]
 
-  // JUSTIFIED INDEX: Prevents duplicate attendance records for same employee/date
+  // JUSTIFIED INDEXES: Prevents duplicate attendance records and optimizes date/status lookups
   @@unique([employeeId, date])
+  @@index([employeeId, date])
+  @@index([date, status])
   @@index([status])
   @@index([date])
 }
@@ -428,6 +434,7 @@ model Notification {
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
+  @@index([userId])
   @@index([userId, isRead])
   @@index([userId, createdAt])
   @@index([type])
@@ -690,6 +697,10 @@ model LoginAttempt {
   ipAddress  String?
   successful Boolean
   createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([ipAddress, createdAt])
+  @@index([createdAt])
 }
 
 model Session {

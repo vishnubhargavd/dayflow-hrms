@@ -132,6 +132,23 @@ export async function applyLeaveService(employeeId: string, data: { leaveTypeId:
       }
     }
 
+    // Validate that employee is not already marked present during the requested leave period
+    const conflictingAttendance = await tx.attendance.findMany({
+      where: {
+        employeeId,
+        date: { gte: startDate, lte: endDate },
+        status: { notIn: [AttendanceStatus.LEAVE, AttendanceStatus.ON_LEAVE, AttendanceStatus.HOLIDAY, AttendanceStatus.WEEKEND] },
+      },
+    });
+
+    if (conflictingAttendance.length > 0) {
+      throw new AppError(
+        `Cannot apply leave: attendance already recorded on ${conflictingAttendance.length} day(s) in this period.`,
+        400,
+        'LEAVE_DATE_CONFLICT'
+      );
+    }
+
     // Update pending days in balance
     await tx.leaveBalance.update({
       where: { id: balance.id },

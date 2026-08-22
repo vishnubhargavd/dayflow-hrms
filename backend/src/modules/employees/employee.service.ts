@@ -98,7 +98,9 @@ export async function createEmployeeService(data: any, createdByUserId: string) 
 export async function getEmployeesService(queryParams: any) {
   const { page, limit, skip } = parsePaginationParams(queryParams.page, queryParams.limit);
 
-  const where: Prisma.EmployeeWhereInput = {};
+  const where: Prisma.EmployeeWhereInput = {
+    deletedAt: null, // Filter out soft-deleted employees
+  };
 
   if (queryParams.departmentId) {
     where.departmentId = queryParams.departmentId;
@@ -137,7 +139,6 @@ export async function getEmployeesService(queryParams: any) {
         designation: { select: { id: true, title: true } },
         manager: { select: { id: true, firstName: true, lastName: true } },
         user: { select: { email: true, role: true, accountStatus: true } },
-        // Intentionally omitting bankName, accountNumber, ifscCode, panNumber to prevent data leaks
       },
     }),
     prisma.employee.count({ where }),
@@ -150,8 +151,8 @@ export async function getEmployeesService(queryParams: any) {
 }
 
 export async function getEmployeeByIdService(employeeId: string, requestingUser: any) {
-  const employee = await prisma.employee.findUnique({
-    where: { id: employeeId },
+  const employee = await prisma.employee.findFirst({
+    where: { id: employeeId, deletedAt: null },
     include: {
       user: {
         select: {
@@ -172,16 +173,47 @@ export async function getEmployeeByIdService(employeeId: string, requestingUser:
     throw new AppError('Employee profile not found.', 404, 'NOT_FOUND');
   }
 
-  // IDOR / Financial Data Access Control:
-  // Only Admin, HR, or the employee themselves can view private financial data
   const isSelf = requestingUser.employeeId === employee.id || requestingUser.userId === employee.userId;
   const isPrivileged = requestingUser.role === Role.ADMIN || requestingUser.role === Role.HR;
 
   if (!isSelf && !isPrivileged) {
-    // Strip sensitive private fields for non-owners/non-HR
     const { bankName, accountNumber, ifscCode, panNumber, ...safeEmployee } = employee;
     return safeEmployee;
   }
 
   return employee;
+}
+
+export async function softDeleteEmployeeService(employeeId: string, deletedByUserId: string) {
+  const employee = await prisma.employee.findFirst({
+    where: { id: employeeId, deletedAt: null },
+  });
+
+  if (!employee) {
+    throw new AppError('Employee profile not found.', 404, 'NOT_FOUND');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.employee.update({
+      where: { id: employeeId },
+      data: { deletedAt: new Date() },
+    });
+
+    await tx.user.update({
+      where: { id: employee.userId },
+      data: { accountStatus: AccountStatus.INACTIVE },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        userId: deletedByUserId,
+        action: 'SOFT_DELETE_EMPLOYEE',
+        entity: 'Employee',
+        entityId: employeeId,
+        details: `Soft-deleted employee ${employee.loginId} (${employee.firstName} ${employee.lastName})`,
+      },
+    });
+
+    return updated;
+  });
 }

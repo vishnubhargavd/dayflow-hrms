@@ -7,6 +7,29 @@ import {
   Role,
 } from '../types';
 
+export interface ApiError {
+  success: false;
+  errorCode: string;
+  message: string;
+  errors?: Record<string, { message: string; field: string }>;
+}
+
+export function extractApiErrors(errorPayload: any): {
+  message: string;
+  fieldErrors: Record<string, string>;
+} {
+  const fieldErrors: Record<string, string> = {};
+  const message = errorPayload?.message || 'An unexpected error occurred.';
+
+  if (errorPayload?.errors && typeof errorPayload.errors === 'object') {
+    Object.entries(errorPayload.errors).forEach(([key, val]: [string, any]) => {
+      fieldErrors[key] = val?.message || String(val);
+    });
+  }
+
+  return { message, fieldErrors };
+}
+
 const API_BASE = '/api/v1';
 
 // Initial Mock Dataset for rapid interactive testing & offline hackathon resilience
