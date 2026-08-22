@@ -89,6 +89,15 @@ enum NotificationType {
   GENERAL
 }
 
+enum HelpdeskCategory {
+  SALARY_ISSUE
+  ATTENDANCE_CORRECTION
+  LEAVE_ISSUE
+  DOCUMENT_REQUEST
+  PROFILE_UPDATE
+  OTHER
+}
+
 enum HelpdeskPriority {
   LOW
   MEDIUM
@@ -101,6 +110,7 @@ enum HelpdeskStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+  CANCELLED
 }
 
 enum PayrollStatus {
@@ -171,6 +181,7 @@ model User {
   changedSalaryHistories SalaryHistory[]
   createdPerformanceGoals PerformanceGoal[] @relation("GoalCreator")
   conductedPerformanceReviews PerformanceReview[] @relation("ReviewerUser")
+  helpdeskComments HelpdeskComment[]
 
   @@index([loginId])
   @@index([email])
@@ -413,17 +424,38 @@ model HelpdeskRequest {
   ticketNumber String           @unique
   employeeId   String
   employee     Employee         @relation("HelpdeskRequester", fields: [employeeId], references: [id], onDelete: Cascade)
-  category     String
+  category     HelpdeskCategory
   subject      String
-  description  String
+  description  String           @db.Text
   priority     HelpdeskPriority @default(MEDIUM)
   status       HelpdeskStatus   @default(OPEN)
   assignedToId String?
   assignedTo   Employee?        @relation("HelpdeskAssignee", fields: [assignedToId], references: [id])
+  resolution   String?          @db.Text
+  resolvedAt   DateTime?
+  closedAt     DateTime?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
+  comments HelpdeskComment[]
+
   @@index([status])
+  @@index([employeeId, createdAt])
+  @@index([category])
+  @@index([priority])
+  @@index([assignedToId])
+}
+
+model HelpdeskComment {
+  id                String          @id @default(uuid())
+  helpdeskRequestId String
+  helpdeskRequest   HelpdeskRequest @relation(fields: [helpdeskRequestId], references: [id], onDelete: Cascade)
+  authorId          String
+  author            User            @relation(fields: [authorId], references: [id])
+  message           String          @db.Text
+  createdAt         DateTime        @default(now())
+
+  @@index([helpdeskRequestId, createdAt])
 }
 
 // ==========================================

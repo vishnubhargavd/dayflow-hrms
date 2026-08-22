@@ -96,11 +96,22 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Leave | `/api/v1/leave/requests` | GET | Bearer JWT | ADMIN, HR |
 | Leave | `/api/v1/leave/requests/:id/approve` | PATCH | Bearer JWT | ADMIN, HR |
 | Leave | `/api/v1/leave/requests/:id/reject` | PATCH | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/me/requests` | POST | Bearer JWT | All Employees (Scoped to self) |
+| Helpdesk | `/api/v1/helpdesk/me/requests` | GET | Bearer JWT | All Employees (Scoped to self) |
+| Helpdesk | `/api/v1/helpdesk/me/requests/:id` | GET | Bearer JWT | All Employees (Scoped to self) |
+| Helpdesk | `/api/v1/helpdesk/me/requests/:id/cancel` | PATCH | Bearer JWT | All Employees (Scoped to self) |
+| Helpdesk | `/api/v1/helpdesk/me/requests/:id/comments` | POST | Bearer JWT | All Employees (Scoped to self) |
+| Helpdesk | `/api/v1/helpdesk/requests` | GET | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/requests/:id` | GET | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/requests/:id/assign` | PATCH | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/requests/:id/status` | PATCH | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/requests/:id/resolve` | PATCH | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/requests/:id/close` | PATCH | Bearer JWT | ADMIN, HR |
+| Helpdesk | `/api/v1/helpdesk/requests/:id/comments` | POST | Bearer JWT | ADMIN, HR |
 | Payroll | `/api/v1/payroll` | GET | Bearer JWT | Joshith |
 | Performance | `/api/v1/performance` | GET | Bearer JWT | Joshith |
 | Recruitment | `/api/v1/recruitment` | GET | Bearer JWT | Joshith |
 | Notifications | `/api/v1/notifications` | GET | Bearer JWT | Vishnu |
-| Helpdesk | `/api/v1/helpdesk` | GET | Bearer JWT | Vishnu |
 | Reports | `/api/v1/reports` | GET | Bearer JWT | Joshith |
 | Audit Logs | `/api/v1/audit` | GET | Bearer JWT | ADMIN |
 

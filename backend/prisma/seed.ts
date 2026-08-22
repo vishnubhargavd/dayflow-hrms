@@ -1,4 +1,4 @@
-import { PrismaClient, Role, AccountStatus, EmployeeStatus, Gender, MaritalStatus, LeaveCategory } from '@prisma/client';
+import { PrismaClient, Role, AccountStatus, EmployeeStatus, Gender, MaritalStatus, LeaveCategory, HelpdeskCategory, HelpdeskPriority, HelpdeskStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -216,6 +216,23 @@ async function main() {
       isActive: true,
     },
   });
+
+  // 9. Seed Helpdesk Request
+  if (empUser.employee) {
+    await prisma.helpdeskRequest.upsert({
+      where: { ticketNumber: 'HD-2026-0001' },
+      update: {},
+      create: {
+        ticketNumber: 'HD-2026-0001',
+        employeeId: empUser.employee.id,
+        category: HelpdeskCategory.ATTENDANCE_CORRECTION,
+        priority: HelpdeskPriority.MEDIUM,
+        subject: 'Checkout missing on August 21',
+        description: 'My checkout time was not recorded due to biometric scanner glitch.',
+        status: HelpdeskStatus.OPEN,
+      },
+    });
+  }
 
   console.log('✅ Dayflow HRMS Database Seeded Successfully!');
   console.log('   Admin Creds:    loginId: OIADMN20260001 / Pass: AdminPassword123!');
