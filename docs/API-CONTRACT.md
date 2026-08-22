@@ -77,6 +77,11 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Attendance | `/api/v1/attendance` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
 | Attendance | `/api/v1/attendance/weekly` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
 | Attendance | `/api/v1/attendance/monthly` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
+| Attendance | `/api/v1/attendance/analytics` | GET | Bearer JWT | All (Personal metrics scoped to self) |
+| Attendance | `/api/v1/attendance/analytics/overview` | GET | Bearer JWT | ADMIN, HR |
+| Attendance | `/api/v1/attendance/analytics/departments` | GET | Bearer JWT | ADMIN, HR |
+| Attendance | `/api/v1/attendance/analytics/trend` | GET | Bearer JWT | ADMIN, HR |
+| Attendance | `/api/v1/attendance/analytics/low-attendance` | GET | Bearer JWT | ADMIN, HR |
 | Payroll | `/api/v1/payroll` | GET | Bearer JWT | Joshith |
 | Performance | `/api/v1/performance` | GET | Bearer JWT | Joshith |
 | Recruitment | `/api/v1/recruitment` | GET | Bearer JWT | Joshith |
@@ -85,3 +90,27 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Reports | `/api/v1/reports` | GET | Bearer JWT | Joshith |
 | AI Assistant | `/api/v1/ai/query` | POST | Bearer JWT | Abhinav |
 | Audit Logs | `/api/v1/audit` | GET | Bearer JWT | ADMIN |
+
+---
+
+## Attendance Analytics Specifications
+
+### Query Parameters
+- `from` (`YYYY-MM-DD`): Optional start date filter (defaults to 30 days prior).
+- `to` (`YYYY-MM-DD`): Optional end date filter (defaults to today).
+- `threshold` (Number, 1-100): Used in `/low-attendance` (defaults to 80%).
+
+### Calculation Formulas
+1. **Attendance Rate (%)**:
+   $$\text{attendanceRate} = \frac{\text{presentDays} + 0.5 \times \text{halfDays}}{\text{totalRecords}} \times 100$$
+2. **Absenteeism Rate (%)**:
+   $$\text{absenteeismRate} = \frac{\text{absentDays}}{\text{totalRecords}} \times 100$$
+3. **Average Daily Working Hours**:
+   $$\text{averageWorkingHours} = \frac{\text{totalWorkingHours}}{\text{presentDays} + \text{halfDays}}$$
+
+### RBAC Summary
+- `GET /api/v1/attendance/analytics`: Accessible to all authenticated users (strictly scoped to own `employeeId`).
+- `GET /api/v1/attendance/analytics/overview`: `ADMIN`, `HR` only.
+- `GET /api/v1/attendance/analytics/departments`: `ADMIN`, `HR` only.
+- `GET /api/v1/attendance/analytics/trend`: `ADMIN`, `HR` only.
+- `GET /api/v1/attendance/analytics/low-attendance`: `ADMIN`, `HR` only.

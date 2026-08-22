@@ -74,3 +74,65 @@ export const monthlyAttendanceQuerySchema = z.object({
     }),
   employeeId: z.string().uuid().optional(),
 });
+
+export const analyticsDateRangeSchema = z
+  .object({
+    from: z
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: 'from must be a valid ISO date string (YYYY-MM-DD)',
+      }),
+    to: z
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: 'to must be a valid ISO date string (YYYY-MM-DD)',
+      }),
+  })
+  .refine(
+    (data) => {
+      if (data.from && data.to) {
+        return new Date(data.from).getTime() <= new Date(data.to).getTime();
+      }
+      return true;
+    },
+    {
+      message: 'from date cannot be after to date',
+      path: ['from'],
+    }
+  );
+
+export const lowAttendanceQuerySchema = z
+  .object({
+    from: z
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: 'from must be a valid ISO date string (YYYY-MM-DD)',
+      }),
+    to: z
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: 'to must be a valid ISO date string (YYYY-MM-DD)',
+      }),
+    threshold: z
+      .string()
+      .optional()
+      .refine((val) => !val || (!isNaN(Number(val)) && Number(val) >= 1 && Number(val) <= 100), {
+        message: 'Threshold must be a percentage between 1 and 100',
+      }),
+  })
+  .refine(
+    (data) => {
+      if (data.from && data.to) {
+        return new Date(data.from).getTime() <= new Date(data.to).getTime();
+      }
+      return true;
+    },
+    {
+      message: 'from date cannot be after to date',
+      path: ['from'],
+    }
+  );
