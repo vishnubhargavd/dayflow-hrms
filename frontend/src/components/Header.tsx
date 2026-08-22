@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>+ Add Employee</span>
+            <span>Add Employee</span>
           </button>
         ) : (
           <button

@@ -108,13 +108,13 @@ export const EmployeeTimeOffView: React.FC<EmployeeTimeOffViewProps> = ({ onOpen
           </p>
         </div>
 
-        {/* Gradient "+ + NEW Time Off" button from reference */}
+        {/* Gradient "New Time Off Request" button */}
         <button
           onClick={onOpenApplyLeave}
           className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500/80 via-purple-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 flex items-center gap-2 transition-all self-start sm:self-center cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
-          <span>+ + NEW Time Off</span>
+          <span>New Time Off Request</span>
         </button>
       </div>
 

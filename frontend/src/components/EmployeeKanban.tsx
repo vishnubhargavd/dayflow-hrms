@@ -89,7 +89,7 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee
             className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all self-start sm:self-center cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add Employee</span>
+            <span>Add Employee</span>
           </button>
         )}
       </div>
