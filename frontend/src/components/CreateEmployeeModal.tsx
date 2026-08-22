@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserPlus, Building, DollarSign, Sparkles } from 'lucide-react';
+import { X, UserPlus, Sparkles } from 'lucide-react';
 import { Employee } from '../types';
 import { api } from '../services/api';
 
@@ -63,32 +63,32 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
 
         {/* Modal Window */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-2xl z-10 space-y-5"
+          exit={{ opacity: 0, scale: 0.96, y: 10 }}
+          className="relative w-full max-w-lg bg-[#1E1F29] border border-[#2E303E] rounded-lg p-5 shadow-2xl z-10 space-y-4"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
-                <UserPlus className="w-4 h-4" />
+          <div className="flex items-center justify-between pb-3 border-b border-[#2E303E]">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded bg-[#714B67]/20 text-[#C9A9C2] flex items-center justify-center border border-[#714B67]/30">
+                <UserPlus className="w-3.5 h-3.5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Create Employee Account</h3>
-                <p className="text-[11px] text-zinc-400">Generates deterministic Login ID (e.g. OIJODO20260001)</p>
+                <h3 className="text-sm font-bold text-white">Create Employee</h3>
+                <p className="text-[10px] text-zinc-400 font-mono">Generates deterministic Login ID (e.g. OIJODO20260001)</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors"
+              className="p-1 rounded bg-[#16171F] hover:bg-[#252736] text-zinc-400 hover:text-white border border-[#2E303E] transition-colors"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-zinc-400 mb-1 font-medium">First Name</label>
                 <input
@@ -97,7 +97,7 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                   placeholder="e.g. Alex"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                 />
               </div>
               <div>
@@ -108,12 +108,12 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                   placeholder="e.g. Rivera"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-zinc-400 mb-1 font-medium">Work Email</label>
                 <input
@@ -122,7 +122,7 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                   placeholder="alex.r@dayflow.com"
                   value={workEmail}
                   onChange={(e) => setWorkEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                 />
               </div>
               <div>
@@ -132,18 +132,18 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-zinc-400 mb-1 font-medium">Department</label>
                 <select
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67] cursor-pointer"
                 >
                   <option value="Engineering">Engineering</option>
                   <option value="Product Design">Product Design</option>
@@ -161,14 +161,14 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
                   placeholder="e.g. Backend Engineer"
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className="block text-zinc-400 mb-1 font-medium">Monthly Wage (₹ Base CTC)</label>
+                <label className="block text-zinc-400 mb-1 font-medium">Monthly Wage (Base CTC)</label>
                 <input
                   type="number"
                   required
@@ -176,37 +176,37 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                   step="1000"
                   value={monthlyWage}
                   onChange={(e) => setMonthlyWage(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 font-mono focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 font-mono focus:outline-none focus:border-[#714B67]"
                 />
               </div>
               <div>
-                <label className="block text-zinc-400 mb-1 font-medium">Office Location</label>
+                <label className="block text-zinc-400 mb-1 font-medium">Location</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Bangalore Campus"
-                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                  className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                 />
               </div>
             </div>
 
             {/* Submit Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2E303E]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold"
+                className="px-3 py-1.5 rounded bg-[#16171F] hover:bg-[#252736] text-zinc-300 font-medium"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-lg shadow-purple-600/30 flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-1.5 rounded bg-[#714B67] hover:bg-[#5B3C53] text-white font-medium shadow-sm flex items-center gap-1.5 cursor-pointer"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>{submitting ? 'Generating...' : 'Provision Employee'}</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{submitting ? 'Generating...' : 'Save & Provision'}</span>
               </button>
             </div>
           </form>

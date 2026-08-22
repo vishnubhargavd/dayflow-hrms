@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { SpotlightCard } from "./SpotlightCard";
-import { Plane, Search } from "lucide-react";
+import { Plane, Search, Plus } from "lucide-react";
 import { api, INITIAL_EMPLOYEES } from "../services/api";
 
 export interface EmployeeItem {
@@ -17,6 +16,7 @@ export interface EmployeeItem {
   status?: "present" | "leave" | "absent" | string;
   todayStatus?: string;
   monthlyWage?: number;
+  joiningYear?: number;
   [key: string]: any;
 }
 
@@ -35,12 +35,16 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({
   const [employees, setEmployees] = useState<EmployeeItem[]>(propEmployees || []);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeDept, setActiveDept] = useState("All");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!propEmployees || propEmployees.length === 0) {
-      api.getEmployees().then((data) => {
-        setEmployees(data || INITIAL_EMPLOYEES);
-      });
+      setLoading(true);
+      api.getEmployees()
+        .then((data) => {
+          setEmployees(data || INITIAL_EMPLOYEES);
+        })
+        .finally(() => setLoading(false));
     } else {
       setEmployees(propEmployees);
     }
@@ -70,30 +74,51 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-      {/* Top Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {/* Odoo Control Panel Bar (Sub-Header) */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-4 border-b border-white/[0.08]">
+        {/* Left: Odoo [NEW] Button & Title */}
+        <div className="flex items-center gap-4">
+          {onOpenCreateModal && (
+            <button
+              onClick={onOpenCreateModal}
+              className="bg-[#714B67] hover:bg-[#5B3C53] text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
+            >
+              <Plus className="w-4 h-4" />
+              <span>NEW</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-white tracking-tight">Employees</h1>
+            <span className="text-xs px-2 py-0.5 rounded-md bg-white/5 border border-white/[0.08] text-zinc-400 font-mono">
+              {filteredEmployees.length}
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Search Box & Department Chips */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search by name, ID, or role..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-zinc-900/90 border border-zinc-800 rounded-xl text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/60 w-72 transition-all"
+              className="pl-9 pr-4 py-1.5 bg-[#181924] border border-white/[0.08] rounded-lg text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#714B67] w-64 transition-colors"
             />
           </div>
 
-          <div className="hidden lg:flex items-center gap-1.5 bg-zinc-900/60 border border-zinc-800/80 p-1 rounded-xl">
+          <div className="hidden lg:flex items-center gap-1 bg-[#181924] border border-white/[0.08] p-1 rounded-lg">
             {departments.map((dept) => (
               <button
                 key={String(dept)}
                 onClick={() => setActiveDept(String(dept))}
-                className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                   activeDept === dept
-                    ? "bg-purple-600/20 text-purple-300 border border-purple-500/30"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-[#714B67] text-white shadow-sm"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
                 }`}
               >
                 {String(dept)}
@@ -101,95 +126,124 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({
             ))}
           </div>
         </div>
-
-        {onOpenCreateModal && (
-          <button
-            onClick={onOpenCreateModal}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-purple-600/20"
-          >
-            + New Employee
-          </button>
-        )}
       </div>
 
-      {/* Excalidraw Kanban Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredEmployees.map((emp) => {
-          const displayName = (emp.name || `${emp.firstName || ""} ${emp.lastName || ""}`).trim() || "Employee";
-          const displayRole = emp.role || emp.jobTitle || emp.designation?.title || "Staff Member";
-          const deptName = getDeptName(emp.department);
-          const rawStatus = (emp.status || emp.todayStatus || "absent").toLowerCase();
-          const status = rawStatus === "on_leave" ? "leave" : rawStatus;
-
-          return (
-            <SpotlightCard
-              key={emp.id}
-              onClick={() => onSelectEmployee(emp)}
-              className="cursor-pointer group flex flex-col items-center text-center backdrop-blur-xl relative"
+      {/* Shimmer Skeleton Loader */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-[#181924] border border-white/[0.08] rounded-xl p-5 animate-pulse space-y-4"
             >
-              {/* Pinned Top-Right Presence Indicator */}
-              <div className="absolute top-4 right-4 z-20">
-                {status === "present" && (
-                  <span className="relative flex h-3 w-3" title="Present in Office">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
-                  </span>
-                )}
-                {status === "leave" && (
-                  <div
-                    className="p-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                    title="On Leave"
-                  >
-                    <Plane className="w-3.5 h-3.5" />
-                  </div>
-                )}
-                {status !== "present" && status !== "leave" && (
-                  <span
-                    className="inline-flex rounded-full h-3 w-3 bg-amber-500 shadow-[0_0_8px_#f59e0b]"
-                    title="Absent"
-                  ></span>
-                )}
+              <div className="flex justify-between items-center">
+                <div className="w-16 h-4 bg-white/5 rounded" />
+                <div className="w-3 h-3 bg-white/5 rounded-full" />
               </div>
+              <div className="flex flex-col items-center space-y-2 pt-2">
+                <div className="w-[72px] h-[72px] bg-white/5 rounded-2xl" />
+                <div className="w-24 h-4 bg-white/5 rounded mt-2" />
+                <div className="w-28 h-3 bg-white/5 rounded" />
+                <div className="w-20 h-4 bg-white/5 rounded-md" />
+              </div>
+              <div className="border-t border-white/[0.06] pt-3 flex justify-between">
+                <div className="w-16 h-3 bg-white/5 rounded" />
+                <div className="w-20 h-3 bg-white/5 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* High-End Enterprise Kanban Grid (4 Columns) */
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-5">
+          {filteredEmployees.map((emp) => {
+            const displayName = (emp.name || `${emp.firstName || ""} ${emp.lastName || ""}`).trim() || "Employee";
+            const displayRole = emp.role || emp.jobTitle || emp.designation?.title || "Staff Member";
+            const deptName = getDeptName(emp.department);
+            const rawStatus = (emp.status || emp.todayStatus || "absent").toLowerCase();
+            const status = rawStatus === "on_leave" ? "leave" : rawStatus;
+            const joiningYear = emp.joiningYear || 2023;
 
-              {/* Centered Avatar */}
-              <div className="relative mb-3 mt-1">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden border border-zinc-700/60 p-1 bg-zinc-900 group-hover:border-purple-500/50 transition-colors">
-                  <img
-                    src={
-                      emp.avatarUrl ||
-                      emp.profilePicture ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`
-                    }
-                    alt={displayName}
-                    className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
-                  />
+            return (
+              <div
+                key={emp.id}
+                onClick={() => onSelectEmployee(emp)}
+                className="group relative cursor-pointer bg-[#181924] border border-white/[0.08] hover:border-[#714B67] hover:shadow-xl hover:shadow-[#714B67]/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-200 rounded-xl p-5 flex flex-col justify-between"
+              >
+                <div>
+                  {/* Top Row: Department Badge & Presence Indicator */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="bg-white/5 text-zinc-400 border border-white/5 px-2 py-0.5 rounded text-[11px] font-medium truncate max-w-[120px]">
+                      {deptName}
+                    </span>
+
+                    {/* Pinned Top-Right Presence Indicator */}
+                    <div>
+                      {status === "present" && (
+                        <span className="relative flex h-2.5 w-2.5" title="Present in Office">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+                        </span>
+                      )}
+                      {status === "leave" && (
+                        <div
+                          className="p-1 rounded bg-[#017E84]/20 text-[#017E84] border border-[#017E84]/40"
+                          title="On Leave"
+                        >
+                          <Plane className="w-3 h-3" />
+                        </div>
+                      )}
+                      {status !== "present" && status !== "leave" && (
+                        <span
+                          className="inline-flex rounded-full h-2.5 w-2.5 bg-[#F59E0B] shadow-[0_0_6px_#F59E0B]"
+                          title="Absent"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Centered Avatar Image (72x72px) & Details */}
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden border border-white/[0.08] p-0.5 bg-[#16171F] group-hover:border-[#714B67] group-hover:scale-105 transition-all duration-200">
+                      <img
+                        src={
+                          emp.avatarUrl ||
+                          emp.profilePicture ||
+                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`
+                        }
+                        alt={displayName}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    </div>
+
+                    {/* Name & Job Title */}
+                    <h3 className="text-base font-semibold text-white mt-3 group-hover:text-[#D4A5C9] transition-colors">
+                      {displayName}
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1">{displayRole}</p>
+
+                    {/* Deterministic Login ID Badge */}
+                    {emp.loginId && (
+                      <span className="text-[11px] font-mono bg-[#714B67]/15 text-[#D4A5C9] border border-[#714B67]/30 px-2.5 py-0.5 rounded-md mt-2 font-medium">
+                        {emp.loginId}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card Footer */}
+                <div className="border-t border-white/[0.06] mt-4 pt-3 flex items-center justify-between text-xs text-zinc-400">
+                  <span className="text-[11px]">Joined {joiningYear}</span>
+                  <span className="text-[#017E84] group-hover:text-[#D4A5C9] group-hover:translate-x-0.5 transition-all font-medium flex items-center gap-0.5">
+                    <span>View Profile</span>
+                    <span>→</span>
+                  </span>
                 </div>
               </div>
-
-              {/* Deterministic Login ID Badge */}
-              {emp.loginId && (
-                <span className="text-[11px] font-mono tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 mb-2">
-                  {emp.loginId}
-                </span>
-              )}
-
-              {/* Name & Job Title */}
-              <h3 className="text-base font-semibold text-zinc-100 group-hover:text-white transition-colors">
-                {displayName}
-              </h3>
-              <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1">{displayRole}</p>
-
-              {/* Card Footer */}
-              <div className="mt-4 pt-3 border-t border-zinc-800/80 w-full flex items-center justify-between text-[11px] text-zinc-500 font-medium">
-                <span>{deptName}</span>
-                <span className="text-purple-400 group-hover:translate-x-0.5 transition-transform">
-                  View Profile →
-                </span>
-              </div>
-            </SpotlightCard>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

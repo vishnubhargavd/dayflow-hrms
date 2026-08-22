@@ -4,13 +4,11 @@ import {
   CalendarDays,
   CheckCircle2,
   XCircle,
-  Clock,
   Plus,
   Plane,
   Upload,
   Calendar,
   X,
-  Sparkles,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LeaveRequest, LeaveStatus } from '../types';
@@ -40,10 +38,10 @@ export const TimeOffPage: React.FC = () => {
       prev.map((r) => (r.id === id ? { ...r, status: 'APPROVED' as LeaveStatus } : r))
     );
     confetti({
-      particleCount: 70,
+      particleCount: 60,
       spread: 60,
       origin: { y: 0.6 },
-      colors: ['#10b981', '#34d399', '#a855f7'],
+      colors: ['#017E84', '#10B981', '#714B67'],
     });
   };
 
@@ -92,7 +90,6 @@ export const TimeOffPage: React.FC = () => {
     setAttachment(null);
   };
 
-  // Mock calendar days for August 2026
   const calendarDays = Array.from({ length: 31 }, (_, i) => {
     const dayNum = i + 1;
     let status: 'present' | 'leave' | 'weekend' | 'holiday' | 'none' = 'present';
@@ -103,93 +100,93 @@ export const TimeOffPage: React.FC = () => {
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Top Header & New Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-xl shadow-xl">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-5">
+      {/* Odoo Control Header & Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-[#1E1F29] border border-[#2E303E] shadow-sm">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Time Off & Leave Portal</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 font-mono border border-purple-500/20">
-              {isAdmin ? 'Admin Approval Queue' : 'My Leave Balances'}
+          <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <span>Time Off</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-[#714B67]/20 text-[#C9A9C2] font-mono border border-[#714B67]/30">
+              {isAdmin ? 'Approval Queue' : 'My Leave Balances'}
             </span>
           </h2>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Real-time balance quota management and automated calendar synchronization.
+            Balance quota deduction and automated calendar synchronization.
           </p>
         </div>
 
         <button
           onClick={() => setIsNewModalOpen(true)}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-purple-600/30 flex items-center gap-1.5 transition-all cursor-pointer"
+          className="px-3.5 py-1.5 bg-[#714B67] hover:bg-[#5B3C53] text-white rounded text-xs font-medium shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           <span>+ NEW Time Off</span>
         </button>
       </div>
 
       {/* Top Balance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Paid Time Off Card */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-purple-950/30 via-zinc-900 to-zinc-900 border border-purple-500/30 flex items-center justify-between shadow-xl">
+        <div className="p-5 rounded-lg bg-[#1E1F29] border border-[#2E303E] flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5 mb-1">
-              <CalendarDays className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#A08098] flex items-center gap-1.5 mb-0.5">
+              <CalendarDays className="w-3.5 h-3.5 text-[#714B67]" />
               Paid Time Off
             </span>
-            <h3 className="text-3xl font-black text-white font-mono mt-1">
-              24 <span className="text-sm font-sans text-zinc-400 font-normal">Days Available</span>
+            <h3 className="text-2xl font-bold text-white font-mono mt-1">
+              24 <span className="text-xs font-sans text-zinc-400 font-normal">Days Available</span>
             </h3>
-            <p className="text-xs text-zinc-400 mt-1">Valid across financial year 2026</p>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Financial Year 2026 Allocation</p>
           </div>
 
-          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border-2 border-purple-500/30 flex items-center justify-center font-mono font-bold text-purple-300 text-lg">
-            80%
+          <div className="w-12 h-12 rounded bg-[#714B67]/15 border border-[#714B67]/30 flex items-center justify-center font-mono font-bold text-[#C9A9C2] text-sm">
+            24d
           </div>
         </div>
 
         {/* Sick Time Off Card */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-sky-950/30 via-zinc-900 to-zinc-900 border border-sky-500/30 flex items-center justify-between shadow-xl">
+        <div className="p-5 rounded-lg bg-[#1E1F29] border border-[#2E303E] flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5 mb-1">
-              <Plane className="w-4 h-4 text-sky-400" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#017E84] flex items-center gap-1.5 mb-0.5">
+              <Plane className="w-3.5 h-3.5 text-[#017E84]" />
               Sick Time Off
             </span>
-            <h3 className="text-3xl font-black text-white font-mono mt-1">
-              07 <span className="text-sm font-sans text-zinc-400 font-normal">Days Available</span>
+            <h3 className="text-2xl font-bold text-white font-mono mt-1">
+              07 <span className="text-xs font-sans text-zinc-400 font-normal">Days Available</span>
             </h3>
-            <p className="text-xs text-zinc-400 mt-1">Requires medical certificate for &gt; 2 days</p>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Requires certificate for &gt; 2 days</p>
           </div>
 
-          <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center font-mono font-bold text-sky-300 text-lg">
-            70%
+          <div className="w-12 h-12 rounded bg-[#017E84]/15 border border-[#017E84]/30 flex items-center justify-center font-mono font-bold text-[#017E84] text-sm">
+            07d
           </div>
         </div>
       </div>
 
       {/* Admin View: Full Approval Queue Table */}
       {isAdmin ? (
-        <div className="p-6 rounded-3xl bg-zinc-900/90 border border-zinc-800 shadow-xl space-y-4">
+        <div className="p-4 rounded-lg bg-[#1E1F29] border border-[#2E303E] space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
               Employee Leave Requests & Actions
             </h3>
-            <span className="text-xs text-zinc-400 font-mono">{requests.length} Requests Total</span>
+            <span className="text-xs text-zinc-400 font-mono">{requests.length} Requests</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-950 text-zinc-400 uppercase text-[10px] font-bold border-b border-zinc-800">
+              <thead className="bg-[#252736] text-zinc-400 uppercase text-[10px] font-semibold border-b border-[#2E303E]">
                 <tr>
-                  <th className="py-3 px-4">Employee</th>
-                  <th className="py-3 px-4">Time Off Type</th>
-                  <th className="py-3 px-4">Duration & Dates</th>
-                  <th className="py-3 px-4">Reason</th>
-                  <th className="py-3 px-4">Attachment</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th className="py-2.5 px-3.5">Employee</th>
+                  <th className="py-2.5 px-3.5">Time Off Type</th>
+                  <th className="py-2.5 px-3.5">Duration</th>
+                  <th className="py-2.5 px-3.5">Reason</th>
+                  <th className="py-2.5 px-3.5">Attachment</th>
+                  <th className="py-2.5 px-3.5">Status</th>
+                  <th className="py-2.5 px-3.5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/60">
+              <tbody className="divide-y divide-[#2E303E]">
                 <AnimatePresence>
                   {requests.map((req) => {
                     const isPending = req.status === 'PENDING';
@@ -198,60 +195,62 @@ export const TimeOffPage: React.FC = () => {
                         key={req.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="hover:bg-zinc-950/40 transition-colors"
+                        className="hover:bg-[#16171F] transition-colors"
                       >
-                        <td className="py-3.5 px-4">
-                          <span className="font-bold text-white block">
+                        <td className="py-2.5 px-3.5">
+                          <span className="font-medium text-white block">
                             {req.employee.firstName} {req.employee.lastName}
                           </span>
-                          <span className="text-[10px] text-purple-300 font-mono">
+                          <span className="text-[10px] text-[#A08098] font-mono">
                             {req.employee.loginId}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-zinc-200">{req.leaveType.name}</td>
-                        <td className="py-3.5 px-4 font-mono text-zinc-300">
+                        <td className="py-2.5 px-3.5 text-zinc-200">{req.leaveType.name}</td>
+                        <td className="py-2.5 px-3.5 font-mono text-zinc-300">
                           {req.startDate} to {req.endDate}
                           <span className="block text-[10px] text-zinc-400 font-sans">
                             {req.totalDays} {req.totalDays === 1 ? 'day' : 'days'}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 max-w-xs text-zinc-300 truncate" title={req.reason}>
+                        <td className="py-2.5 px-3.5 max-w-xs text-zinc-300 truncate" title={req.reason}>
                           {req.reason}
                         </td>
-                        <td className="py-3.5 px-4 text-zinc-400">
+                        <td className="py-2.5 px-3.5 text-zinc-400">
                           {req.attachmentName ? (
-                            <span className="text-[11px] text-purple-300 underline font-mono">
+                            <span className="text-[11px] text-[#017E84] underline font-mono">
                               {req.attachmentName}
                             </span>
                           ) : (
                             '—'
                           )}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2.5 px-3.5">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-medium ${
                               req.status === 'APPROVED'
-                                ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                                ? 'bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30'
                                 : req.status === 'REJECTED'
-                                ? 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
-                                : 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                                ? 'bg-[#DC2626]/15 text-[#EF4444] border border-[#DC2626]/30'
+                                : 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
                             }`}
                           >
                             {req.status}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-2.5 px-3.5 text-right">
                           {isPending ? (
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {/* Solid Odoo Teal Approve Button */}
                               <button
                                 onClick={() => handleApprove(req.id)}
-                                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-md shadow-emerald-600/30 cursor-pointer"
+                                className="px-2.5 py-1 bg-[#017E84] hover:bg-[#00666A] text-white rounded text-xs font-medium cursor-pointer"
                               >
                                 Approve
                               </button>
+                              {/* Crisp Red Reject Button */}
                               <button
                                 onClick={() => handleReject(req.id)}
-                                className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold shadow-md shadow-rose-600/30 cursor-pointer"
+                                className="px-2.5 py-1 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded text-xs font-medium cursor-pointer"
                               >
                                 Reject
                               </button>
@@ -270,52 +269,52 @@ export const TimeOffPage: React.FC = () => {
         </div>
       ) : (
         /* Employee View: Calendar with Colored Markers */
-        <div className="p-6 rounded-3xl bg-zinc-900/90 border border-zinc-800 shadow-xl space-y-4">
+        <div className="p-4 rounded-lg bg-[#1E1F29] border border-[#2E303E] space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-purple-400" />
-              <span>August 2026 Time-Off & Presence Calendar</span>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-[#714B67]" />
+              <span>August 2026 Time-Off Calendar</span>
             </h3>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-3 text-[11px]">
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#10B981]" />
                 <span className="text-zinc-400">Present</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
-                <span className="text-zinc-400">On Leave</span>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#017E84]" />
+                <span className="text-zinc-400">Leave</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-600" />
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#2E303E]" />
                 <span className="text-zinc-400">Weekend</span>
               </div>
             </div>
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2 pt-2 text-center">
+          <div className="grid grid-cols-7 gap-1.5 pt-1 text-center">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-              <span key={day} className="text-[10px] font-bold text-zinc-500 uppercase py-1">
+              <span key={day} className="text-[10px] font-semibold text-zinc-500 uppercase py-0.5">
                 {day}
               </span>
             ))}
 
             {calendarDays.map((d) => {
-              let markerBg = 'bg-zinc-950/60 border-zinc-800/80 text-zinc-300';
-              if (d.status === 'present') markerBg = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
-              if (d.status === 'leave') markerBg = 'bg-sky-500/20 border-sky-500/40 text-sky-200 font-bold';
-              if (d.status === 'weekend') markerBg = 'bg-zinc-900/40 border-zinc-800/40 text-zinc-600';
-              if (d.status === 'holiday') markerBg = 'bg-purple-500/20 border-purple-500/40 text-purple-200';
+              let markerBg = 'bg-[#16171F] border-[#2E303E] text-zinc-300';
+              if (d.status === 'present') markerBg = 'bg-[#10B981]/15 border-[#10B981]/30 text-[#10B981]';
+              if (d.status === 'leave') markerBg = 'bg-[#017E84]/20 border-[#017E84]/40 text-[#017E84] font-bold';
+              if (d.status === 'weekend') markerBg = 'bg-[#16171F]/50 border-[#2E303E]/40 text-zinc-600';
+              if (d.status === 'holiday') markerBg = 'bg-[#714B67]/20 border-[#714B67]/40 text-[#C9A9C2]';
 
               return (
                 <div
                   key={d.day}
-                  className={`p-3 rounded-xl border text-xs font-mono transition-all ${markerBg}`}
+                  className={`p-2.5 rounded border text-xs font-mono transition-colors ${markerBg}`}
                 >
-                  <span className="text-xs font-bold block">{d.day}</span>
-                  <span className="text-[9px] uppercase tracking-wider block mt-0.5">
+                  <span className="text-xs font-semibold block">{d.day}</span>
+                  <span className="text-[8px] uppercase tracking-wider block mt-0.5">
                     {d.status === 'leave' ? 'LEAVE' : d.status === 'holiday' ? 'OFF' : ''}
                   </span>
                 </div>
@@ -338,31 +337,31 @@ export const TimeOffPage: React.FC = () => {
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-2xl z-10 space-y-4"
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              className="relative w-full max-w-md bg-[#1E1F29] border border-[#2E303E] rounded-lg p-5 shadow-2xl z-10 space-y-3.5"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Plane className="w-4 h-4 text-purple-400" />
+              <div className="flex items-center justify-between pb-2.5 border-b border-[#2E303E]">
+                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <Plane className="w-4 h-4 text-[#017E84]" />
                   <span>Request Time Off</span>
                 </h3>
                 <button
                   onClick={() => setIsNewModalOpen(false)}
-                  className="p-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors"
+                  className="p-1 rounded bg-[#16171F] hover:bg-[#252736] text-zinc-400 hover:text-white border border-[#2E303E] transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateLeave} className="space-y-3.5 text-xs">
+              <form onSubmit={handleCreateLeave} className="space-y-3 text-xs">
                 <div>
                   <label className="block text-zinc-400 mb-1 font-medium">Time Off Type</label>
                   <select
                     value={leaveType}
                     onChange={(e) => setLeaveType(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                    className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                   >
                     <option value="lt-1">Paid Time Off (24 Days Available)</option>
                     <option value="lt-2">Sick Time Off (07 Days Available)</option>
@@ -370,25 +369,25 @@ export const TimeOffPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-zinc-400 mb-1 font-medium">Validity Start Date</label>
+                    <label className="block text-zinc-400 mb-1 font-medium">Start Date</label>
                     <input
                       type="date"
                       required
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                      className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                     />
                   </div>
                   <div>
-                    <label className="block text-zinc-400 mb-1 font-medium">Validity End Date</label>
+                    <label className="block text-zinc-400 mb-1 font-medium">End Date</label>
                     <input
                       type="date"
                       required
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                      className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                     />
                   </div>
                 </div>
@@ -401,7 +400,7 @@ export const TimeOffPage: React.FC = () => {
                     max="14"
                     value={allocationDays}
                     onChange={(e) => setAllocationDays(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 font-mono focus:outline-none focus:border-purple-500"
+                    className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 font-mono focus:outline-none focus:border-[#714B67]"
                   />
                 </div>
 
@@ -409,20 +408,20 @@ export const TimeOffPage: React.FC = () => {
                   <label className="block text-zinc-400 mb-1 font-medium">Reason for Request</label>
                   <textarea
                     required
-                    rows={3}
-                    placeholder="Provide details for manager review..."
+                    rows={2}
+                    placeholder="Provide reason for review..."
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 focus:outline-none focus:border-purple-500"
+                    className="w-full px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] rounded text-zinc-200 focus:outline-none focus:border-[#714B67]"
                   />
                 </div>
 
                 {/* File Attachment */}
                 <div>
-                  <label className="block text-zinc-400 mb-1 font-medium">Attachment (Medical Certificate, etc.)</label>
-                  <label className="px-3 py-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl text-zinc-300 flex items-center justify-between cursor-pointer">
+                  <label className="block text-zinc-400 mb-1 font-medium">Attachment</label>
+                  <label className="px-2.5 py-1.5 bg-[#16171F] border border-[#2E303E] hover:border-zinc-600 rounded text-zinc-300 flex items-center justify-between cursor-pointer">
                     <span className="flex items-center gap-1.5">
-                      <Upload className="w-3.5 h-3.5 text-purple-400" />
+                      <Upload className="w-3.5 h-3.5 text-[#017E84]" />
                       <span>{attachment ? attachment : 'Choose file...'}</span>
                     </span>
                     <input
@@ -433,19 +432,19 @@ export const TimeOffPage: React.FC = () => {
                   </label>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2">
+                <div className="flex items-center justify-end gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setIsNewModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold"
+                    className="px-3 py-1.5 rounded bg-[#16171F] hover:bg-[#252736] text-zinc-300 font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-lg shadow-purple-600/30 cursor-pointer"
+                    className="px-4 py-1.5 rounded bg-[#714B67] hover:bg-[#5B3C53] text-white font-medium shadow-sm cursor-pointer"
                   >
-                    Submit Application
+                    Submit
                   </button>
                 </div>
               </form>

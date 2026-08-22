@@ -12,19 +12,19 @@ import { Employee } from './types';
 import { api, INITIAL_EMPLOYEES } from './services/api';
 
 function DashboardContent() {
-  const { user } = useAuth();
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { user, isAuthenticated, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('employees');
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    api.getEmployees().then((data) => setEmployees(data || INITIAL_EMPLOYEES));
-  }, []);
+    if (isAuthenticated) {
+      api.getEmployees().then((data) => setEmployees(data || INITIAL_EMPLOYEES));
+    }
+  }, [isAuthenticated]);
 
   const handleSelectEmployee = (emp: any) => {
-    // Find full matching employee or use selected
     const found = employees.find((e) => e.id === emp.id || e.loginId === emp.loginId) || emp;
     setSelectedEmployee(found);
   };
@@ -40,11 +40,11 @@ function DashboardContent() {
   };
 
   if (!isAuthenticated) {
-    return <AuthPage onSuccess={() => setIsAuthenticated(true)} />;
+    return <AuthPage onSuccess={() => {}} />;
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-purple-500/30 selection:text-purple-200">
+    <div className="min-h-screen bg-[#16171F] text-zinc-100 flex flex-col font-sans selection:bg-[#714B67]/30 selection:text-[#D4A5C9]">
       {/* Top Global Navigation Bar & Systray */}
       <Navbar
         activeTab={activeTab}
@@ -53,7 +53,7 @@ function DashboardContent() {
           setSelectedEmployee(null);
         }}
         onOpenMyProfile={handleOpenMyProfile}
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={logout}
       />
 
       {/* Main Content Area */}
@@ -62,10 +62,10 @@ function DashboardContent() {
           {activeTab === 'employees' && (
             <motion.div
               key={selectedEmployee ? 'profile-view' : 'kanban-view'}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
             >
               {selectedEmployee ? (
                 <ProfileFormView
@@ -85,10 +85,10 @@ function DashboardContent() {
           {activeTab === 'attendance' && (
             <motion.div
               key="attendance"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
             >
               <AttendancePage />
             </motion.div>
@@ -97,10 +97,10 @@ function DashboardContent() {
           {activeTab === 'timeoff' && (
             <motion.div
               key="timeoff"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
             >
               <TimeOffPage />
             </motion.div>
