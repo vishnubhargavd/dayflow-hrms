@@ -71,9 +71,12 @@ All API endpoints strictly follow RESTful conventions under the versioned base p
 | Auth | `/api/v1/auth/me` | GET | Bearer JWT | All |
 | Employees | `/api/v1/employees` | POST | Bearer JWT | ADMIN, HR |
 | Employees | `/api/v1/employees` | GET | Bearer JWT | All |
-| Employees | `/api/v1/employees/:id` | GET | Bearer JWT | All (Filtered for non-owners) |
-| Attendance | `/api/v1/attendance` | GET | Bearer JWT | Abhinav |
-| Leave | `/api/v1/leave` | GET | Bearer JWT | Vishnu |
+| Attendance | `/api/v1/attendance/check-in` | POST | Bearer JWT | All Employees |
+| Attendance | `/api/v1/attendance/check-out` | POST | Bearer JWT | All Employees |
+| Attendance | `/api/v1/attendance/today` | GET | Bearer JWT | All Employees |
+| Attendance | `/api/v1/attendance` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
+| Attendance | `/api/v1/attendance/weekly` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
+| Attendance | `/api/v1/attendance/monthly` | GET | Bearer JWT | All (EMPLOYEE scoped to self; ADMIN/HR all) |
 | Payroll | `/api/v1/payroll` | GET | Bearer JWT | Joshith |
 | Performance | `/api/v1/performance` | GET | Bearer JWT | Joshith |
 | Recruitment | `/api/v1/recruitment` | GET | Bearer JWT | Joshith |

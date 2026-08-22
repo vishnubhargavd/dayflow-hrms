@@ -1,17 +1,39 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import {
+  checkInController,
+  checkOutController,
+  getTodayAttendanceController,
+  getAttendanceHistoryController,
+  getWeeklyAttendanceController,
+  getMonthlyAttendanceController,
+} from './attendance.controller';
 import { authenticate } from '../../middleware/auth.middleware';
-import { sendSuccess } from '../../utils/response.util';
+import { validateBody, validateQuery } from '../../middleware/validation.middleware';
+import {
+  checkInSchema,
+  checkOutSchema,
+  attendanceQuerySchema,
+  weeklyAttendanceQuerySchema,
+  monthlyAttendanceQuerySchema,
+} from './attendance.validation';
 
 const router = Router();
 
+// All attendance endpoints require authentication
 router.use(authenticate);
 
-router.get('/', (req: Request, res: Response) => {
-  return sendSuccess(
-    res,
-    { owner: 'Abhinav', status: 'CONTRACT_READY' },
-    'Attendance module endpoint skeleton — To be extended by Abhinav (feature/abhinav-attendance-ai)'
-  );
-});
+// Check-in & Check-out
+router.post('/check-in', validateBody(checkInSchema), checkInController);
+router.post('/check-out', validateBody(checkOutSchema), checkOutController);
+
+// Today's Attendance
+router.get('/today', getTodayAttendanceController);
+
+// Weekly & Monthly Summary Views
+router.get('/weekly', validateQuery(weeklyAttendanceQuerySchema), getWeeklyAttendanceController);
+router.get('/monthly', validateQuery(monthlyAttendanceQuerySchema), getMonthlyAttendanceController);
+
+// Attendance History & Listing
+router.get('/', validateQuery(attendanceQuerySchema), getAttendanceHistoryController);
 
 export default router;
