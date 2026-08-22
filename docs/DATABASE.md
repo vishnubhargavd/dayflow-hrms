@@ -63,3 +63,26 @@ Every index in the database is explicitly designed and justified to satisfy crit
 - **Prisma Schema**: `@@unique([companyCode, year])`
 - **Justification**:
   1. **Concurrency Control**: Powers atomic sequence increments during Login ID generation (`OIJODO20260001`), ensuring multi-threaded employee creation requests generate non-conflicting Login IDs.
+
+### 7. `PayrollRecord(employeeId, month, year)` — Composite Unique Index
+- **Prisma Schema**: `@@unique([employeeId, month, year])`
+- **Justification**:
+  1. **Duplicate Prevention**: Prevents double-processing payroll for the same employee within the same monthly cycle.
+  2. **Query Performance**: Speeds up period lookup queries for payroll and payslip generation.
+
+### 8. `SalaryStructure(employeeId)` — Unique Index
+- **Prisma Schema**: `@@unique([employeeId])`
+- **Justification**:
+  1. **Single Active Structure**: Ensures each employee has exactly one active salary structure definition.
+
+### 9. `SalaryHistory(employeeId, createdAt)` — Composite Index
+- **Prisma Schema**: `@@index([employeeId, createdAt])`
+- **Justification**:
+  1. **Historical Audit Performance**: Fast retrieval of an employee's salary modification timeline sorted chronologically.
+
+### 10. `PerformanceReview(employeeId, reviewPeriod)` — Composite Unique Index
+- **Prisma Schema**: `@@unique([employeeId, reviewPeriod])`
+- **Justification**:
+  1. **Duplicate Review Prevention**: Guarantees an employee has at most one performance review cycle for a given review period.
+
+

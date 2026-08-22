@@ -110,10 +110,17 @@ enum PayrollStatus {
   PAID
 }
 
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum ReviewStatus {
   DRAFT
-  SUBMITTED
-  IN_REVIEW
+  SELF_ASSESSMENT
+  UNDER_REVIEW
   COMPLETED
 }
 
@@ -131,6 +138,11 @@ enum CandidateStatus {
   OFFERED
   HIRED
   REJECTED
+}
+
+enum SalaryComponentType {
+  EARNING
+  DEDUCTION
 }
 
 // ==========================================
@@ -156,6 +168,9 @@ model User {
   auditLogs         AuditLog[]
   notifications     Notification[]
   uploadedDocuments Document[]
+  changedSalaryHistories SalaryHistory[]
+  createdPerformanceGoals PerformanceGoal[] @relation("GoalCreator")
+  conductedPerformanceReviews PerformanceReview[] @relation("ReviewerUser")
 
   @@index([loginId])
   @@index([email])
@@ -240,7 +255,10 @@ model Employee {
   reviewedLeaveRequests  LeaveRequest[]      @relation("LeaveReviewer")
   leaveBalances          LeaveBalance[]
   payslips               Payslip[]
-  performanceReviews     PerformanceReview[]
+  salaryStructure        SalaryStructure?
+  salaryHistories        SalaryHistory[]
+  payrollRecords         PayrollRecord[]
+  performanceReviews     PerformanceReview[] @relation("EmployeeReviews")
   performanceGoals       PerformanceGoal[]
   assignedHelpdesk       HelpdeskRequest[]   @relation("HelpdeskAssignee")
   helpdeskRequests       HelpdeskRequest[]   @relation("HelpdeskRequester")
@@ -409,34 +427,109 @@ model HelpdeskRequest {
 }
 
 // ==========================================
+// ==========================================
 // PAYROLL MODULE (Joshith)
 // ==========================================
 
 model SalaryComponent {
-  id        String   @id @default(uuid())
-  name      String
-  type      String // EARNING or DEDUCTION
-  isTaxable Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String              @id @default(uuid())
+  name        String              @unique
+  type        SalaryComponentType
+  description String?
+  isTaxable   Boolean             @default(true)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  salaryStructureItems SalaryStructureItem[]
+}
+
+model SalaryStructure {
+  id            String    @id @default(uuid())
+  employeeId    String    @unique
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  baseSalary    Float
+  effectiveDate DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  items SalaryStructureItem[]
+
+  @@index([employeeId])
+}
+
+model SalaryStructureItem {
+  id                String          @id @default(uuid())
+  salaryStructureId String
+  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
+  salaryComponentId String
+  salaryComponent   SalaryComponent @relation(fields: [salaryComponentId], references: [id], onDelete: Cascade)
+  amount            Float
+  createdAt         DateTime        @default(now())
+
+  @@unique([salaryStructureId, salaryComponentId])
+}
+
+model SalaryHistory {
+  id                 String   @id @default(uuid())
+  employeeId         String
+  employee           Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  previousBaseSalary Float?
+  newBaseSalary      Float
+  previousNetSalary  Float?
+  newNetSalary       Float
+  effectiveDate      DateTime @default(now())
+  reason             String
+  changedById        String
+  changedBy          User     @relation(fields: [changedById], references: [id])
+  createdAt          DateTime @default(now())
+
+  @@index([employeeId, createdAt])
+}
+
+model PayrollRecord {
+  id              String        @id @default(uuid())
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  month           Int
+  year            Int
+  baseSalary      Float
+  totalEarnings   Float
+  totalDeductions  Float
+  grossSalary     Float
+  netSalary       Float
+  status          PayrollStatus @default(DRAFT)
+  paymentDate     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  payslip Payslip?
+
+  @@unique([employeeId, month, year])
+  @@index([month, year])
+  @@index([status])
 }
 
 model Payslip {
-  id          String        @id @default(uuid())
-  employeeId  String
-  employee    Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  month       Int
-  year        Int
-  basicSalary Float
-  allowances  Float         @default(0)
-  deductions  Float         @default(0)
-  netSalary   Float
-  status      PayrollStatus @default(DRAFT)
-  paymentDate DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  payrollRecordId String        @unique
+  payrollRecord   PayrollRecord @relation(fields: [payrollRecordId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payslipNumber   String        @unique
+  month           Int
+  year            Int
+  basicSalary     Float
+  allowances      Float         @default(0)
+  deductions      Float         @default(0)
+  netSalary       Float
+  status          PayrollStatus @default(DRAFT)
+  paymentDate     DateTime?
+  breakdownJson   String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  @@unique([employeeId, month, year])
+  @@index([employeeId, month, year])
 }
 
 // ==========================================
@@ -444,27 +537,45 @@ model Payslip {
 // ==========================================
 
 model PerformanceGoal {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   employeeId  String
-  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee    Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   title       String
-  description String
-  targetDate  DateTime @db.Date
-  status      String   @default("IN_PROGRESS")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  description String?    @db.Text
+  target      String?
+  progress    Float      @default(0) // 0 to 100
+  status      GoalStatus @default(NOT_STARTED)
+  startDate   DateTime?
+  dueDate     DateTime?  @db.Date
+  createdById String
+  createdBy   User       @relation("GoalCreator", fields: [createdById], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
 }
 
 model PerformanceReview {
-  id           String       @id @default(uuid())
-  employeeId   String
-  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  reviewPeriod String
-  rating       Float
-  feedback     String
-  status       ReviewStatus @default(DRAFT)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id               String       @id @default(uuid())
+  employeeId       String
+  employee         Employee     @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Cascade)
+  reviewerId       String?
+  reviewer         User?        @relation("ReviewerUser", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewPeriod     String       // e.g. "Q2 2026", "2026-H1", "Annual 2026"
+  reviewDate       DateTime?
+  overallRating    Float?       // Range: 1.0 - 5.0
+  status           ReviewStatus @default(DRAFT)
+  selfAssessment   String?      @db.Text
+  reviewerFeedback String?      @db.Text
+  strengths        String?      @db.Text
+  improvementAreas String?      @db.Text
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([employeeId, reviewPeriod])
+  @@index([employeeId])
+  @@index([status])
 }
 
 // ==========================================
