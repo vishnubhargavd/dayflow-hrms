@@ -16,21 +16,28 @@ import {
   FileText,
   Clock,
   Sparkles,
+  Edit3,
+  Download,
 } from 'lucide-react';
 import { Employee, DynamicWageBreakdown } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { calculateDynamicWage } from '../services/api';
+import { EditProfileModal } from './EditProfileModal';
+import { PayslipModal } from './PayslipModal';
 
 interface ProfileDrawerProps {
   employee: Employee | null;
   onClose: () => void;
+  onUpdateEmployee?: (updated: Employee) => void;
   initialTab?: 'profile' | 'salary' | 'attendance';
 }
 
-export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ employee, onClose, initialTab = 'profile' }) => {
+export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ employee, onClose, onUpdateEmployee, initialTab = 'profile' }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'salary' | 'attendance'>(initialTab);
   const [wageInput, setWageInput] = useState<number>(employee?.monthlyWage || 50000);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSlipOpen, setIsSlipOpen] = useState(false);
 
   if (!employee) return null;
 
@@ -356,6 +363,15 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ employee, onClose,
                           </div>
                         </div>
                       </div>
+
+                      {/* Download Payslip CTA */}
+                      <button
+                        onClick={() => setIsSlipOpen(true)}
+                        className="w-full py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Generate & Download August 2026 Payslip</span>
+                      </button>
                     </div>
                   )}
                 </motion.div>
@@ -412,16 +428,46 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ employee, onClose,
 
             {/* Drawer Footer */}
             <div className="pt-6 border-t border-zinc-800/80 mt-6 flex items-center justify-between">
-              <span className="text-[10px] text-zinc-400 font-mono">ID: {employee.id}</span>
+              <button
+                onClick={() => setIsEditOpen(true)}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Edit Profile</span>
+              </button>
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 border border-zinc-800 transition-colors"
+                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 border border-zinc-800 transition-colors cursor-pointer"
               >
                 Close Drawer
               </button>
             </div>
           </motion.div>
         </div>
+
+        {/* Edit Profile Modal */}
+        <EditProfileModal
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          employee={employee}
+          onSave={(updated) => {
+            if (onUpdateEmployee) {
+              onUpdateEmployee({ ...employee, ...updated } as Employee);
+            }
+          }}
+        />
+
+        {/* Payslip Modal */}
+        <PayslipModal
+          isOpen={isSlipOpen}
+          onClose={() => setIsSlipOpen(false)}
+          employeeName={`${employee.firstName} ${employee.lastName}`}
+          employeeId={employee.loginId}
+          department={employee.department?.name}
+          designation={employee.designation?.title}
+          wage={employee.monthlyWage}
+          month="August 2026"
+        />
       </div>
     </AnimatePresence>
   );

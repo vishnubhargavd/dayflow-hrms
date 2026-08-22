@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, Clock, CalendarDays, CreditCard, Shield, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Users, Clock, CalendarDays, CreditCard, BarChart3, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { SystrayWidget } from './SystrayWidget';
 import { Role } from '../types';
@@ -14,10 +14,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, switchRole } = useAuth();
 
   const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'employees', label: 'Employees', icon: <Users className="w-4 h-4" /> },
     { id: 'attendance', label: 'Attendance', icon: <Clock className="w-4 h-4" /> },
-    { id: 'timeoff', label: 'Time Off & Approvals', icon: <CalendarDays className="w-4 h-4" /> },
-    { id: 'payroll', label: 'Payroll & Salary', icon: <CreditCard className="w-4 h-4" /> },
+    { id: 'timeoff', label: 'Time Off', icon: <CalendarDays className="w-4 h-4" /> },
+    { id: 'payroll', label: 'Payroll', icon: <CreditCard className="w-4 h-4" /> },
+    { id: 'reports', label: 'Analytics & Reports', icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   return (

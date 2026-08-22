@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, DollarSign, FileText, Download, ShieldAlert, Sparkles, CheckCircle2, TrendingUp } from 'lucide-react';
+import { CreditCard, DollarSign, FileText, Download, ShieldAlert, Sparkles, CheckCircle2, TrendingUp, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { calculateDynamicWage } from '../services/api';
+import { PayslipModal } from './PayslipModal';
 
 export const PayrollView: React.FC = () => {
   const { user } = useAuth();
   const [testWage, setTestWage] = useState<number>(60000);
+  const [selectedPayslip, setSelectedPayslip] = useState<any | null>(null);
 
   const isPrivileged = user.role === 'ADMIN' || user.role === 'HR';
   const breakdown = calculateDynamicWage(testWage);
@@ -82,8 +84,13 @@ export const PayrollView: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors">
+                        <button
+                          onClick={() => setSelectedPayslip(ps)}
+                          title="View & Download PDF Salary Slip"
+                          className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-emerald-600 text-zinc-300 hover:text-white border border-zinc-800 hover:border-emerald-500 transition-all text-xs font-semibold flex items-center gap-1.5 ml-auto cursor-pointer"
+                        >
                           <Download className="w-3.5 h-3.5" />
+                          <span>PDF Slip</span>
                         </button>
                       </td>
                     </tr>
@@ -203,12 +210,25 @@ export const PayrollView: React.FC = () => {
                 </div>
               </div>
 
-              <button className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 transition-all">
+              <button className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
                 Run August Batch Payroll
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {selectedPayslip && (
+        <PayslipModal
+          isOpen={!!selectedPayslip}
+          onClose={() => setSelectedPayslip(null)}
+          month={selectedPayslip.month}
+          wage={selectedPayslip.gross}
+          employeeName="John Doe"
+          employeeId="OIJODO20220001"
+          department="Engineering"
+          designation="Senior Backend Engineer"
+        />
       )}
     </div>
   );

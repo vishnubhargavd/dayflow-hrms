@@ -1,31 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronRight, DollarSign } from 'lucide-react';
+import { Search, ChevronRight, DollarSign, Users, Plus, Filter, Sparkles, Building } from 'lucide-react';
 import { Employee } from '../types';
-import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { SpotlightCard } from './SpotlightCard';
 
 interface EmployeeKanbanProps {
   onSelectEmployee: (emp: Employee, defaultTab?: 'profile' | 'salary' | 'attendance') => void;
+  onOpenAddEmployee?: () => void;
 }
 
-export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee }) => {
+export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee, onOpenAddEmployee }) => {
   const { user } = useAuth();
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { employees } = useData();
   const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState<string>('ALL');
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
-    const data = await api.getEmployees();
-    setEmployees(data);
-  };
-
-  const departments = ['ALL', ...Array.from(new Set(employees.map((e) => e.department?.name).filter(Boolean)))];
+  const departments = ['ALL', ...Array.from(new Set(employees.map((e) => e.department?.name).filter(Boolean) as string[]))];
 
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
@@ -62,151 +54,153 @@ export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee
         };
       default:
         return {
-          label: 'Absent / Out',
-          dot: 'bg-amber-400',
-          bg: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
-          spotlight: 'rgba(251, 191, 36, 0.15)',
+          label: 'Offline',
+          dot: 'bg-zinc-500',
+          bg: 'bg-zinc-800 border-zinc-700 text-zinc-400',
+          spotlight: 'rgba(113, 113, 122, 0.12)',
         };
     }
   };
 
+  const isPrivileged = user.role === 'ADMIN' || user.role === 'HR';
+
   return (
-    <div className="w-full">
-      {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div className="w-full space-y-6">
+      {/* Top Header & Search Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Employee Directory & Kanban</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 font-mono font-medium border border-zinc-700">
-              {filteredEmployees.length} Total
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <Users className="w-5 h-5 text-indigo-400" />
+              <span>Employee Directory & Kanban</span>
+            </h2>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 font-mono font-medium border border-indigo-500/30">
+              {filteredEmployees.length} Members
             </span>
-          </h2>
+          </div>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Real-time workforce statuses, statutory salary breakdowns, and profile inspector.
+            Click any employee card to inspect personal records, modify salary structures, and view shifts.
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search by name, ID or role..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-            />
-          </div>
-        </div>
+        {onOpenAddEmployee && (
+          <button
+            onClick={onOpenAddEmployee}
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all self-start sm:self-center cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Add Employee</span>
+          </button>
+        )}
       </div>
 
-      {/* Department Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
-        {departments.map((dept) => {
-          const isSelected = selectedDept === dept;
-          return (
+      {/* Filter and Search Controls */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+        {/* Search Input */}
+        <div className="relative w-full md:w-80">
+          <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search by name, employee code, role..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          />
+        </div>
+
+        {/* Department Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+          {departments.map((dept) => (
             <button
               key={dept}
-              onClick={() => setSelectedDept(dept as string)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                isSelected
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80 hover:bg-zinc-800'
+              onClick={() => setSelectedDept(dept)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                selectedDept === dept
+                  ? 'bg-zinc-800 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
               }`}
             >
               {dept}
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
-      {/* Kanban Grid with GPU-Accelerated SpotlightCards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Grid of Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         <AnimatePresence>
-          {filteredEmployees.map((emp, index) => {
-            const statusBadge = getStatusBadge(emp.todayStatus);
+          {filteredEmployees.map((emp) => {
+            const badge = getStatusBadge(emp.todayStatus);
             return (
-              <motion.div
+              <SpotlightCard
                 key={emp.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, delay: index * 0.03 }}
-                whileHover={{ y: -4 }}
+                spotlightColor={badge.spotlight}
+                className="cursor-pointer group"
+                onClick={() => onSelectEmployee(emp, 'profile')}
               >
-                <SpotlightCard
-                  spotlightColor={statusBadge.spotlight}
-                  className="group p-5 cursor-pointer h-full flex flex-col justify-between"
-                  onClick={() => onSelectEmployee(emp, 'profile')}
-                >
-                  <div>
-                    {/* Top Bar: Login ID & Attendance Dot */}
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <span className="px-2 py-0.5 rounded-md bg-zinc-900 text-indigo-300 font-mono text-[10px] font-bold border border-zinc-800 group-hover:border-indigo-500/40 transition-colors">
-                        {emp.loginId}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1.5 ${statusBadge.bg}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusBadge.dot} animate-pulse`} />
-                        <span>{statusBadge.label}</span>
-                      </span>
-                    </div>
-
-                    {/* Avatar & Core Info */}
-                    <div className="flex items-center gap-3.5 mb-4">
+                <div className="p-5 flex flex-col justify-between h-full space-y-4">
+                  {/* Top: Avatar, Name & Status */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
                       <div className="relative">
                         <img
                           src={emp.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.firstName}`}
                           alt={emp.firstName}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800 group-hover:border-indigo-500 transition-colors"
+                          className="w-12 h-12 rounded-2xl object-cover border border-zinc-700 group-hover:border-indigo-500/50 transition-colors shadow-md"
                         />
+                        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-zinc-950 ${badge.dot}`} />
                       </div>
-                      <div className="truncate">
-                        <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
+                      <div>
+                        <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
                           {emp.firstName} {emp.lastName}
-                        </h4>
-                        <p className="text-xs text-zinc-400 font-medium truncate">{emp.designation?.title || 'Staff'}</p>
-                        <p className="text-[10px] text-zinc-400 truncate">{emp.department?.name || 'General'}</p>
+                        </h3>
+                        <p className="text-xs text-zinc-400 font-medium">
+                          {emp.designation?.title}
+                        </p>
                       </div>
+                    </div>
+
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badge.bg}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  {/* Middle Info */}
+                  <div className="grid grid-cols-2 gap-2 text-xs py-1 border-y border-zinc-800/50">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block uppercase">Department</span>
+                      <span className="text-zinc-300 font-medium">{emp.department?.name || 'General'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block uppercase">Employee ID</span>
+                      <span className="font-mono text-zinc-300 font-bold">{emp.loginId}</span>
                     </div>
                   </div>
 
-                  {/* Footer Quick Action Buttons */}
-                  <div className="mt-2 pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-zinc-400 font-mono">
-                      Joined {emp.joiningYear}
-                    </span>
-
-                    <div className="flex items-center gap-1.5">
-                      {/* Admin Salary Quick Action */}
-                      {user.role === 'ADMIN' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectEmployee(emp, 'salary');
-                          }}
-                          title="View Statutory Salary Breakdown"
-                          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-zinc-800 transition-colors"
-                        >
-                          <DollarSign className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
+                  {/* Bottom: Fast Salary & Shift links */}
+                  <div className="flex items-center justify-between pt-1">
+                    {isPrivileged && emp.monthlyWage ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectEmployee(emp, 'profile');
+                          onSelectEmployee(emp, 'salary');
                         }}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-900 group-hover:bg-indigo-600 text-[11px] font-semibold text-zinc-300 group-hover:text-white border border-zinc-800 group-hover:border-indigo-500 transition-all flex items-center gap-1"
+                        className="text-xs font-mono font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
                       >
-                        <span>Details</span>
-                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        <DollarSign className="w-3.5 h-3.5" />
+                        <span>₹{emp.monthlyWage.toLocaleString('en-IN')}/mo</span>
                       </button>
-                    </div>
+                    ) : (
+                      <span className="text-xs text-zinc-500 font-mono">Cohort {emp.joiningYear}</span>
+                    )}
+
+                    <span className="text-xs text-zinc-400 group-hover:text-white font-semibold flex items-center gap-1 transition-colors">
+                      <span>View Record</span>
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
                   </div>
-                </SpotlightCard>
-              </motion.div>
+                </div>
+              </SpotlightCard>
             );
           })}
         </AnimatePresence>
