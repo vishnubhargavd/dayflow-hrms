@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -19,7 +19,8 @@ import {
   RefreshCw,
   AlertCircle,
   Landmark,
-  UserCheck
+  UserCheck,
+  RotateCcw
 } from 'lucide-react';
 import { Employee, Role } from '../types';
 
@@ -54,13 +55,45 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
   const [showPassword, setShowPassword] = useState(false);
   const [assignedRole, setAssignedRole] = useState<Role>('EMPLOYEE');
 
-  // Validation Errors state
+  // Validation Errors & Success State
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Auto-generate Login ID based on First & Last name + year + random sequence
+  // Complete Form Flush / Reset Function
+  const resetForm = useCallback(() => {
+    const year = new Date().getFullYear();
+    const randomSeq = Math.floor(1000 + Math.random() * 9000);
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setPhone('');
+    setDepartment('Engineering');
+    setDesignation('Software Engineer');
+    setMonthlyWage(60000);
+    setDateOfJoining(new Date().toISOString().split('T')[0]);
+    setBankName('HDFC Bank Ltd.');
+    setAccountNumber('');
+    setIfscCode('HDFC0001234');
+    setPanNumber('');
+    setLoginId(`OIUSXX${year}${randomSeq}`);
+    setPassword('Dayflow@2026');
+    setShowPassword(false);
+    setAssignedRole('EMPLOYEE');
+    setErrors({});
+    setActiveTab('profile');
+    setIsSuccess(false);
+  }, []);
+
+  // Flush and clean all state whenever modal opens
   useEffect(() => {
-    const fInitial = firstName.trim().slice(0, 2).toUpperCase() || 'OI';
+    if (isOpen) {
+      resetForm();
+    }
+  }, [isOpen, resetForm]);
+
+  // Auto-update Login ID whenever First Name or Last Name changes
+  useEffect(() => {
+    const fInitial = firstName.trim().slice(0, 2).toUpperCase() || 'US';
     const lInitial = lastName.trim().slice(0, 2).toUpperCase() || 'XX';
     const year = new Date().getFullYear();
     const randomSeq = Math.floor(1000 + Math.random() * 9000);
@@ -111,7 +144,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
     if (!email.trim()) {
       newErrors.email = 'Work email is required';
     } else if (!emailRegex.test(email.trim())) {
-      newErrors.email = 'Invalid email address format (e.g. name@dayflow.com)';
+      newErrors.email = 'Invalid email address (e.g. name@dayflow.com)';
     }
 
     const phoneRegex = /^[+]?[0-9\s-]{10,15}$/;
@@ -165,7 +198,6 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
 
     setErrors(newErrors);
 
-    // Switch to the first tab with an error so the HR user immediately sees what needs attention
     if (newErrors.firstName || newErrors.lastName || newErrors.email || newErrors.phone || newErrors.monthlyWage || newErrors.dateOfJoining) {
       setActiveTab('profile');
     } else if (newErrors.bankName || newErrors.accountNumber || newErrors.ifscCode || newErrors.panNumber) {
@@ -175,6 +207,11 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
     }
 
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -218,8 +255,9 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
     setIsSuccess(true);
     setTimeout(() => {
       setIsSuccess(false);
+      resetForm();
       onClose();
-    }, 1200);
+    }, 1000);
   };
 
   if (!isOpen) return null;
@@ -243,12 +281,23 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
               <p className="text-xs text-zinc-400">Complete employee profile, bank statutory data, and issue login credentials.</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={resetForm}
+              title="Flush & Reset Form"
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-medium"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
+            <button
+              onClick={handleClose}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Multi-Section Tabs */}
@@ -601,7 +650,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 <button
                   type="button"
                   onClick={() => {
-                    const fInitial = firstName.trim().slice(0, 2).toUpperCase() || 'OI';
+                    const fInitial = firstName.trim().slice(0, 2).toUpperCase() || 'US';
                     const lInitial = lastName.trim().slice(0, 2).toUpperCase() || 'XX';
                     const year = new Date().getFullYear();
                     const randomSeq = Math.floor(1000 + Math.random() * 9000);
@@ -709,7 +758,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
           <div className="pt-4 border-t border-zinc-800 flex items-center justify-between">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition-colors cursor-pointer"
             >
               Cancel
