@@ -1,215 +1,194 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronRight, DollarSign } from 'lucide-react';
-import { Employee } from '../types';
-import { api } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { SpotlightCard } from './SpotlightCard';
+import React, { useState, useEffect } from "react";
+import { SpotlightCard } from "./SpotlightCard";
+import { Plane, Search } from "lucide-react";
+import { api, INITIAL_EMPLOYEES } from "../services/api";
 
-interface EmployeeKanbanProps {
-  onSelectEmployee: (emp: Employee, defaultTab?: 'profile' | 'salary' | 'attendance') => void;
+export interface EmployeeItem {
+  id: string;
+  loginId?: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  jobTitle?: string;
+  department?: string | { id?: string; name?: string; code?: string };
+  avatarUrl?: string;
+  profilePicture?: string;
+  status?: "present" | "leave" | "absent" | string;
+  todayStatus?: string;
+  monthlyWage?: number;
+  [key: string]: any;
 }
 
-export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({ onSelectEmployee }) => {
-  const { user } = useAuth();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [search, setSearch] = useState('');
-  const [selectedDept, setSelectedDept] = useState<string>('ALL');
+interface EmployeeKanbanProps {
+  employees?: EmployeeItem[];
+  onSelectEmployee: (emp: EmployeeItem, defaultTab?: 'profile' | 'salary' | 'attendance') => void;
+  onOpenCreateModal?: () => void;
+  [key: string]: any;
+}
+
+export const EmployeeKanban: React.FC<EmployeeKanbanProps> = ({
+  employees: propEmployees,
+  onSelectEmployee,
+  onOpenCreateModal,
+}) => {
+  const [employees, setEmployees] = useState<EmployeeItem[]>(propEmployees || []);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeDept, setActiveDept] = useState("All");
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    if (!propEmployees || propEmployees.length === 0) {
+      api.getEmployees().then((data) => {
+        setEmployees(data || INITIAL_EMPLOYEES);
+      });
+    } else {
+      setEmployees(propEmployees);
+    }
+  }, [propEmployees]);
 
-  const fetchEmployees = async () => {
-    const data = await api.getEmployees();
-    setEmployees(data);
+  const getDeptName = (dept: any): string => {
+    if (!dept) return "General";
+    if (typeof dept === "string") return dept;
+    return dept.name || "General";
   };
 
-  const departments = ['ALL', ...Array.from(new Set(employees.map((e) => e.department?.name).filter(Boolean)))];
+  const departments = [
+    "All",
+    ...Array.from(new Set(employees.map((e) => getDeptName(e.department)).filter(Boolean))),
+  ];
 
   const filteredEmployees = employees.filter((emp) => {
-    const matchesSearch =
-      `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-      emp.loginId.toLowerCase().includes(search.toLowerCase()) ||
-      (emp.designation?.title || '').toLowerCase().includes(search.toLowerCase());
+    const fullName = (emp.name || `${emp.firstName || ""} ${emp.lastName || ""}`).trim().toLowerCase();
+    const loginId = (emp.loginId || "").toLowerCase();
+    const role = (emp.role || emp.jobTitle || emp.designation?.title || "").toLowerCase();
+    const search = searchTerm.toLowerCase();
+    const deptName = getDeptName(emp.department);
 
-    const matchesDept = selectedDept === 'ALL' || emp.department?.name === selectedDept;
+    const matchesSearch = fullName.includes(search) || loginId.includes(search) || role.includes(search);
+    const matchesDept = activeDept === "All" || deptName === activeDept;
     return matchesSearch && matchesDept;
   });
 
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'PRESENT':
-        return {
-          label: 'Present',
-          dot: 'bg-emerald-400',
-          bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
-          spotlight: 'rgba(16, 185, 129, 0.18)',
-        };
-      case 'ON_LEAVE':
-        return {
-          label: 'On Leave',
-          dot: 'bg-sky-400',
-          bg: 'bg-sky-500/10 border-sky-500/30 text-sky-300',
-          spotlight: 'rgba(56, 189, 248, 0.18)',
-        };
-      case 'HALF_DAY':
-        return {
-          label: 'Half Day',
-          dot: 'bg-indigo-400',
-          bg: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300',
-          spotlight: 'rgba(99, 102, 241, 0.18)',
-        };
-      default:
-        return {
-          label: 'Absent / Out',
-          dot: 'bg-amber-400',
-          bg: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
-          spotlight: 'rgba(251, 191, 36, 0.15)',
-        };
-    }
-  };
-
   return (
-    <div className="w-full">
-      {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Employee Directory & Kanban</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 font-mono font-medium border border-zinc-700">
-              {filteredEmployees.length} Total
-            </span>
-          </h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Real-time workforce statuses, statutory salary breakdowns, and profile inspector.
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+      {/* Top Search & Filter Bar */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by name, ID or role..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              placeholder="Search by name, ID, or role..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-zinc-900/90 border border-zinc-800 rounded-xl text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/60 w-72 transition-all"
             />
           </div>
+
+          <div className="hidden lg:flex items-center gap-1.5 bg-zinc-900/60 border border-zinc-800/80 p-1 rounded-xl">
+            {departments.map((dept) => (
+              <button
+                key={String(dept)}
+                onClick={() => setActiveDept(String(dept))}
+                className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
+                  activeDept === dept
+                    ? "bg-purple-600/20 text-purple-300 border border-purple-500/30"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {String(dept)}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {onOpenCreateModal && (
+          <button
+            onClick={onOpenCreateModal}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-purple-600/20"
+          >
+            + New Employee
+          </button>
+        )}
       </div>
 
-      {/* Department Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
-        {departments.map((dept) => {
-          const isSelected = selectedDept === dept;
+      {/* Excalidraw Kanban Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredEmployees.map((emp) => {
+          const displayName = (emp.name || `${emp.firstName || ""} ${emp.lastName || ""}`).trim() || "Employee";
+          const displayRole = emp.role || emp.jobTitle || emp.designation?.title || "Staff Member";
+          const deptName = getDeptName(emp.department);
+          const rawStatus = (emp.status || emp.todayStatus || "absent").toLowerCase();
+          const status = rawStatus === "on_leave" ? "leave" : rawStatus;
+
           return (
-            <button
-              key={dept}
-              onClick={() => setSelectedDept(dept as string)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                isSelected
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80 hover:bg-zinc-800'
-              }`}
+            <SpotlightCard
+              key={emp.id}
+              onClick={() => onSelectEmployee(emp)}
+              className="cursor-pointer group flex flex-col items-center text-center backdrop-blur-xl relative"
             >
-              {dept}
-            </button>
+              {/* Pinned Top-Right Presence Indicator */}
+              <div className="absolute top-4 right-4 z-20">
+                {status === "present" && (
+                  <span className="relative flex h-3 w-3" title="Present in Office">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+                  </span>
+                )}
+                {status === "leave" && (
+                  <div
+                    className="p-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30"
+                    title="On Leave"
+                  >
+                    <Plane className="w-3.5 h-3.5" />
+                  </div>
+                )}
+                {status !== "present" && status !== "leave" && (
+                  <span
+                    className="inline-flex rounded-full h-3 w-3 bg-amber-500 shadow-[0_0_8px_#f59e0b]"
+                    title="Absent"
+                  ></span>
+                )}
+              </div>
+
+              {/* Centered Avatar */}
+              <div className="relative mb-3 mt-1">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden border border-zinc-700/60 p-1 bg-zinc-900 group-hover:border-purple-500/50 transition-colors">
+                  <img
+                    src={
+                      emp.avatarUrl ||
+                      emp.profilePicture ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`
+                    }
+                    alt={displayName}
+                    className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+
+              {/* Deterministic Login ID Badge */}
+              {emp.loginId && (
+                <span className="text-[11px] font-mono tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 mb-2">
+                  {emp.loginId}
+                </span>
+              )}
+
+              {/* Name & Job Title */}
+              <h3 className="text-base font-semibold text-zinc-100 group-hover:text-white transition-colors">
+                {displayName}
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1">{displayRole}</p>
+
+              {/* Card Footer */}
+              <div className="mt-4 pt-3 border-t border-zinc-800/80 w-full flex items-center justify-between text-[11px] text-zinc-500 font-medium">
+                <span>{deptName}</span>
+                <span className="text-purple-400 group-hover:translate-x-0.5 transition-transform">
+                  View Profile →
+                </span>
+              </div>
+            </SpotlightCard>
           );
         })}
-      </div>
-
-      {/* Kanban Grid with GPU-Accelerated SpotlightCards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <AnimatePresence>
-          {filteredEmployees.map((emp, index) => {
-            const statusBadge = getStatusBadge(emp.todayStatus);
-            return (
-              <motion.div
-                key={emp.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, delay: index * 0.03 }}
-                whileHover={{ y: -4 }}
-              >
-                <SpotlightCard
-                  spotlightColor={statusBadge.spotlight}
-                  className="group p-5 cursor-pointer h-full flex flex-col justify-between"
-                  onClick={() => onSelectEmployee(emp, 'profile')}
-                >
-                  <div>
-                    {/* Top Bar: Login ID & Attendance Dot */}
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <span className="px-2 py-0.5 rounded-md bg-zinc-900 text-indigo-300 font-mono text-[10px] font-bold border border-zinc-800 group-hover:border-indigo-500/40 transition-colors">
-                        {emp.loginId}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1.5 ${statusBadge.bg}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusBadge.dot} animate-pulse`} />
-                        <span>{statusBadge.label}</span>
-                      </span>
-                    </div>
-
-                    {/* Avatar & Core Info */}
-                    <div className="flex items-center gap-3.5 mb-4">
-                      <div className="relative">
-                        <img
-                          src={emp.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.firstName}`}
-                          alt={emp.firstName}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800 group-hover:border-indigo-500 transition-colors"
-                        />
-                      </div>
-                      <div className="truncate">
-                        <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
-                          {emp.firstName} {emp.lastName}
-                        </h4>
-                        <p className="text-xs text-zinc-400 font-medium truncate">{emp.designation?.title || 'Staff'}</p>
-                        <p className="text-[10px] text-zinc-400 truncate">{emp.department?.name || 'General'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer Quick Action Buttons */}
-                  <div className="mt-2 pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-zinc-400 font-mono">
-                      Joined {emp.joiningYear}
-                    </span>
-
-                    <div className="flex items-center gap-1.5">
-                      {/* Admin Salary Quick Action */}
-                      {user.role === 'ADMIN' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectEmployee(emp, 'salary');
-                          }}
-                          title="View Statutory Salary Breakdown"
-                          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-zinc-800 transition-colors"
-                        >
-                          <DollarSign className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectEmployee(emp, 'profile');
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-900 group-hover:bg-indigo-600 text-[11px] font-semibold text-zinc-300 group-hover:text-white border border-zinc-800 group-hover:border-indigo-500 transition-all flex items-center gap-1"
-                      >
-                        <span>Details</span>
-                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                </SpotlightCard>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
       </div>
     </div>
   );

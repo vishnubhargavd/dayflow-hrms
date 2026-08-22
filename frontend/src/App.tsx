@@ -12,10 +12,10 @@ import { Employee } from './types';
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<string>('employees');
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [drawerInitialTab, setDrawerInitialTab] = useState<'profile' | 'salary' | 'attendance'>('profile');
 
-  const handleOpenDrawer = (emp: Employee, tab: 'profile' | 'salary' | 'attendance' = 'profile') => {
+  const handleOpenDrawer = (emp: any, tab: 'profile' | 'salary' | 'attendance' = 'profile') => {
     setSelectedEmployee(emp);
     setDrawerInitialTab(tab);
   };
@@ -40,7 +40,6 @@ function DashboardContent() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <SmartInsightsBanner />
               <EmployeeKanban onSelectEmployee={handleOpenDrawer} />
             </motion.div>
           )}
